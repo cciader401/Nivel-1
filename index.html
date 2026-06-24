@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CCI - Asistencia Nivel 1</title>
+    <!-- Cargamos Tailwind CSS desde su CDN oficial -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Scripts esenciales para el funcionamiento del sistema -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -12,20 +14,25 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center antialiased">
 
+    <!-- Contenedor de Notificaciones Flotantes (Viñetas) -->
     <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3.5"></div>
 
-        <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
+    <!-- Banner Principal Estilizado con tu Imagen de Internet -->
+    <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.82), rgba(26, 54, 93, 0.82)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: cover; background-position: center;">
         <h1 class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">Nivel 1</h1>
         <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">CCI - Control de Asistencia y Padrón de Alumnos</p>
     </div>
 
+    <!-- Estado del Sistema -->
     <div id="status" class="w-[95%] max-w-5xl bg-white border-l-4 border-pink-600 rounded-r-xl shadow-sm p-4 text-center font-bold text-sm tracking-wide text-slate-700 mb-6 uppercase transition-all duration-300">
         INICIALIZANDO...
     </div>
 
+    <!-- Contenedor Principal en Cuadrícula (Grid) -->
     <div class="w-[95%] max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         
+        <!-- TARJETA 1: ESCÁNER QR -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col transition hover:shadow-md">
             <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-2 flex items-center gap-2">
                 📸 Escáner de Credenciales QR
@@ -34,6 +41,7 @@
             <div id="reader" class="w-full max-w-[320px] mx-auto rounded-xl overflow-hidden shadow-inner !border-0"></div>
         </div>
 
+        <!-- TARJETA 2: REGISTRO DE ALUMNOS -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col transition hover:shadow-md">
             <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-2 flex items-center gap-2">
                 👤 Registrar y Crear QR Único
@@ -62,6 +70,7 @@
                 </button>
             </form>
 
+            <!-- Recuadro del QR generado -->
             <div id="qr-result-box" class="hidden mt-5 p-5 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50/40 text-center flex-col items-center">
                 <span class="font-extrabold text-slate-700 text-xs tracking-wider uppercase mb-3">¡Credencial generada con éxito!</span>
                 <div id="qrcode" class="mx-auto p-3 bg-white rounded-xl shadow-sm border border-slate-100"></div>
@@ -73,11 +82,13 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DE LA TABLA (ANCHO COMPLETO) -->
         <div class="md:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden">
             <div id="area-impresion-pdf" class="w-full bg-white">
                 <h2 class="text-xl font-bold text-slate-800 mb-1">Planilla de Control y Asistencia General - NIVEL 1</h2>
                 <p class="text-xs text-slate-400 mb-5">Límite estricto: la tercera falta genera la baja inmediata del sistema.</p>
                 
+                <!-- Botones de descarga -->
                 <div class="flex flex-wrap gap-3 mb-6 download-actions">
                     <button class="bg-[#1f7244] hover:bg-[#165230] text-white font-bold py-2.5 px-4 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-sm transform active:scale-[0.98]" id="btn-exportar-excel">
                         🟢 Descargar Excel (.xlsx)
@@ -87,6 +98,7 @@
                     </button>
                 </div>
 
+                <!-- Tabla Responsiva -->
                 <div class="overflow-x-auto rounded-xl border border-slate-100">
                     <table id="tabla-asistencia" class="w-full text-left border-collapse">
                         <thead>
@@ -105,6 +117,7 @@
             </div>
         </div>
 
+        <!-- PANEL DE CONTROL ADMINISTRATIVO -->
         <div class="md:col-span-2 bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-red-200 mt-4">
             <h2 class="text-lg font-bold text-red-600 border-b border-red-50 pb-2.5 mb-1">Administración General de la Aplicación</h2>
             <p class="text-xs text-slate-400 mb-5">Gestione errores de captura o prepare el nuevo ciclo anual.</p>
@@ -121,6 +134,7 @@
         </div>
     </div>
 
+    <!-- CÓDIGO DE LÓGICA DE CONTROL (JAVASCRIPT CON CONTROL RETROACTIVO Y VOZ) -->
     <script>
         const statusText = document.getElementById('status');
         const regDni = document.getElementById('reg-dni');
@@ -183,11 +197,9 @@
             return false;
         }
 
-        // Obtener identificador único del bloque de clase actual basado en la fecha
         function obtenerIdClaseActual() {
             const ahora = new Date();
             const diaSemana = ahora.getDay();
-            // Formato AAAAMMDD para marcar el día de la clase
             const fechaStr = ahora.getFullYear() + String(ahora.getMonth() + 1).padStart(2, '0') + String(ahora.getDate()).padStart(2, '0');
             
             if (diaSemana === 5 && esHorarioHabilitado()) {
@@ -199,19 +211,16 @@
             return null;
         }
 
-        // FUNCIÓN CLAVE: Procesa el cierre automático de la clase anterior si cambió el ciclo
         function procesarCierreClaseAutomatico() {
             const claseActualId = obtenerIdClaseActual();
-            if (!claseActualId) return; // Si no estamos en horario de clase activa, no cerramos nada
+            if (!claseActualId) return;
 
             const ultimaClaseRegistrada = localStorage.getItem('ultima_clase_id');
 
-            // Si es un día de clase nuevo diferente al último guardado
             if (ultimaClaseRegistrada && ultimaClaseRegistrada !== claseActualId) {
                 let cambiosEfectuados = false;
                 let alumnosParaDarDeBaja = [];
 
-                // Recorremos el padrón y sumamos falta a los que se quedaron "Ausente" la clase pasada
                 alumnos.forEach((alumno) => {
                     if (alumno.estado === "Ausente") {
                         alumno.faltas += 1;
@@ -223,7 +232,6 @@
                     }
                 });
 
-                // Procesamos las bajas automáticas acumuladas si las hay
                 if (alumnosParaDarDeBaja.length > 0) {
                     alumnosParaDarDeBaja.forEach(dni => {
                         if (!excluidosAnuales.includes(dni)) {
@@ -236,7 +244,6 @@
                     alert(`AVISO DE SISTEMA:\nSe han procesado bajas automáticas por acumular 3 faltas en la clase anterior.`);
                 }
 
-                // Reseteamos el estado de TODOS a "Ausente" para la nueva jornada que arranca
                 alumnos.forEach(alumno => alumno.estado = "Ausente");
 
                 if (cambiosEfectuados) {
@@ -245,7 +252,6 @@
                 }
             }
 
-            // Actualizamos el registro con el ID de la clase de hoy
             localStorage.setItem('ultima_clase_id', claseActualId);
         }
 
@@ -259,6 +265,28 @@
             vineta.innerHTML = `<span>${mensaje}</span><strong class="ml-3 cursor-pointer opacity-70 hover:opacity-100" onclick="this.parentElement.remove()">×</strong>`;
             notifContainer.appendChild(vineta);
             setTimeout(() => { vineta.remove(); }, 5000);
+        }
+
+        function hablarYReproducir(texto, tipoSonido) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                const mensajeVoz = new SpeechSynthesisUtterance(texto);
+                mensajeVoz.lang = 'es-AR';
+                mensajeVoz.rate = 1.0;
+
+                mensajeVoz.onend = function() {
+                    reproducirSonido(tipoSonido);
+                };
+
+                mensajeVoz.onerror = function() {
+                    reproducirSonido(tipoSonido);
+                };
+
+                window.speechSynthesis.speak(mensajeVoz);
+            } else {
+                reproducirSonido(tipoSonido);
+            }
         }
 
         function reproducirSonido(tipo) {
@@ -279,7 +307,6 @@
             const bloqueados = localStorage.getItem('excluidos_anual');
             if (bloqueados) { try { excluidosAnuales = JSON.parse(bloqueados); } catch (e) { excluidosAnuales = []; } }
 
-            // Ejecutamos el control automático de faltas retroactivas al abrir la app
             procesarCierreClaseAutomatico();
             actualizarTabla();
 
@@ -296,7 +323,7 @@
 
         function onScanSuccess(decodedText, decodedResult) {
             if (!esHorarioHabilitado()) {
-                reproducirSonido('error');
+                hablarYReproducir("Escáner bloqueado, fuera de horario", "error");
                 mostrarViñeta("ESCÁNER BLOQUEADO: Fuera de días y horarios de clase.", "error");
                 return;
             }
@@ -311,7 +338,7 @@
 
             if (alumno) {
                 if (alumno.estado === "Presente") {
-                    reproducirSonido('error');
+                    hablarYReproducir(`${alumno.apellido}, ya está registrado`, "error");
                     mostrarViñeta(`ALERTA: ${alumno.apellido} YA MARCO PRESENTE HOY.`, "warning");
                     statusText.innerText = `⚠️ INTENTO DE DUPLICADO: ${alumno.apellido} ya está registrado.`;
                     return;
@@ -319,21 +346,23 @@
 
                 guardarHistorial();
                 alumno.estado = "Presente";
-                reproducirSonido('success');
+                
+                hablarYReproducir(`${alumno.apellido}, presente`, "success");
+                
                 mostrarViñeta(`¡PRESENTE! ${alumno.apellido}, ${alumno.nombre}`, "success");
                 statusText.innerText = `Último QR Leído: ${alumno.apellido} marcó asistencia.`;
                 localStorage.setItem('asistencia_qr_church', JSON.stringify(alumnos));
                 
-                // Asegurar que quede guardado el ID de la clase actual tras un escaneo exitoso
                 const claseId = obtenerIdClaseActual();
                 if(claseId) localStorage.setItem('ultima_clase_id', claseId);
                 
                 actualizarTabla();
             } else {
-                reproducirSonido('error');
                 if (excluidosAnuales.includes(decodedText.trim())) {
+                    hablarYReproducir("Acceso denegado, alumno dado de baja", "error");
                     mostrarViñeta("ACCESO DENEGADO: Alumno dado de baja definitiva por faltas.", "error");
                 } else {
+                    hablarYReproducir("Código no reconocido", "error");
                     mostrarViñeta(`Código QR No Reconocido en el Padrón (${decodedText}).`, "error");
                 }
             }
