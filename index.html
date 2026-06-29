@@ -241,13 +241,37 @@
             document.getElementById('btn-alumno-registrar').disabled = false;
         });
 
+        // DESCARGA REPARADA: Fuerza fondo blanco y máxima nitidez (Elimina fondo negro de algunos celus)
         document.getElementById('btn-al-descargar').addEventListener('click', () => {
-            const img = document.getElementById('al-qrcode').querySelector('img');
-            if(img) {
+            const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
+            if (qrCanvas) {
+                const nuevoCanvas = document.createElement('canvas');
+                nuevoCanvas.width = qrCanvas.width;
+                nuevoCanvas.height = qrCanvas.height;
+                const ctx = nuevoCanvas.getContext('2d');
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, nuevoCanvas.width, nuevoCanvas.height);
+                
+                ctx.imageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.msImageSmoothingEnabled = false;
+                
+                ctx.drawImage(qrCanvas, 0, 0);
+                
                 const a = document.createElement('a');
                 a.download = `Credencial_CCI_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
-                a.href = img.src;
+                a.href = nuevoCanvas.toDataURL('image/png', 1.0);
                 a.click();
+            } else {
+                const img = document.getElementById('al-qrcode').querySelector('img');
+                if (img) {
+                    const a = document.createElement('a');
+                    a.download = `Credencial_CCI_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
+                    a.href = img.src;
+                    a.click();
+                }
             }
         });
 
@@ -269,7 +293,6 @@
             alumnos.sort((a,b) => a.apellido.localeCompare(b.apellido)).forEach((al, idx) => {
                 const tr = document.createElement('tr');
                 
-                // --- ALERTA VISUAL SEGÚN LAS FALTAS ---
                 let colorFila = "hover:bg-slate-50";
                 let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
                 
@@ -375,4 +398,3 @@
     </script>
 </body>
 </html>
-                   
