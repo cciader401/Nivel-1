@@ -12,14 +12,17 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center antialiased pb-10">
 
+    <!-- Notificaciones flotantes -->
     <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3.5"></div>
 
+    <!-- Banner Principal con la Imagen de la Iglesia -->
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: cover; background-position: center;">
         <h1 class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">Nivel 1</h1>
         <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">CCI - Control de Asistencia y Autogestión</p>
     </div>
 
+    <!-- PANTALLA 1: MODO ALUMNO (REGISTRO AUTÓNOMO) -->
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Inscripción a Clase</h2>
         <p class="text-xs text-slate-400 mb-6">Ingresá tus datos para registrarte y generar tu credencial de acceso.</p>
@@ -42,6 +45,7 @@
             </button>
         </form>
 
+        <!-- Contenedor del QR que se le muestra al Alumno -->
         <div id="al-qr-box" class="hidden mt-6 p-5 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50/30 flex-col items-center">
             <span class="font-extrabold text-pink-700 text-xs uppercase mb-3">¡Inscripción Exitosa! Sacale captura a tu QR:</span>
             <div id="al-qrcode" class="mx-auto p-3 bg-white rounded-xl shadow-md"></div>
@@ -50,22 +54,26 @@
         </div>
     </div>
 
+    <!-- PANTALLA 2: MODO ADMINISTRADOR (PANEL GENERAL CON ESCÁNER Y TABLA) -->
     <div id="vista-admin" class="hidden w-[95%] max-w-5xl flex-col items-center">
+        <!-- Estado -->
         <div id="status" class="w-full bg-white border-l-4 border-pink-600 rounded-r-xl shadow-sm p-4 text-center font-bold text-sm text-slate-700 mb-6 uppercase">
             CONECTANDO CON LA NUBE (GOOGLE SHEETS)...
         </div>
 
         <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Escáner QR del Pastor / Administrador -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:col-span-1">
                 <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-2">📸 Escáner de Entrada</h2>
                 <div id="reader" class="w-full max-w-[260px] mx-auto rounded-xl overflow-hidden shadow-inner !border-0"></div>
-                <div class="mt-3 text-center text-[11px] text-slate-400 font-medium">
-                    Horarios permitidos:<br>
-                    Dom: 09:30 a 12:00 hs y 17:00 a 22:30 hs<br>
-                    Vie: 19:00 a 22:30 hs
+                <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Horarios Habilitados:</strong>
+                    Viernes: 19:00 a 22:30 hs<br>
+                    Domingos: 09:30 a 12:00 hs y 17:00 a 22:30 hs
                 </div>
             </div>
 
+            <!-- Tabla General Dinámica (Toma todo desde Sheets) -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
                     <h2 class="text-lg font-bold text-slate-800 mb-1">Planilla en Tiempo Real (Nivel 1)</h2>
@@ -100,7 +108,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
 
-        // Función para emitir pitidos de sistema (Beeps) sin usar archivos de audio externos
+        // Sistema de pitidos limpios (Beeps)
         function emitirPitido(tipo = 'exito') {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -111,14 +119,12 @@
                 gainNode.connect(audioCtx.destination);
                 
                 if (tipo === 'exito') {
-                    // Pitido agudo corto para éxito (Presente)
                     oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Nota La5
+                    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
                     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     oscillator.start();
                     oscillator.stop(audioCtx.currentTime + 0.15);
                 } else if (tipo === 'advertencia') {
-                    // Doble pitido rápido
                     oscillator.type = 'sine';
                     oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
                     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
@@ -134,19 +140,18 @@
                         osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
                     }, 150);
                 } else if (tipo === 'error') {
-                    // Pitido grave y más largo para error
                     oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // Nota La3 grave
+                    oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); 
                     gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
                     oscillator.start();
                     oscillator.stop(audioCtx.currentTime + 0.35);
                 }
             } catch (e) {
-                console.log("El navegador bloqueó el audio momentáneamente hasta una interacción física.");
+                console.log("Audio en espera de interacción.");
             }
         }
 
-        // Validación estricta de días y horarios
+        // Validación estricta de días y horarios requeridos
         function verificarHorarioValido() {
             const ahora = new Date();
             const diaSemana = ahora.getDay(); // 0 = Domingo, 5 = Viernes
@@ -176,7 +181,7 @@
             setTimeout(() => vineta.remove(), 4000);
         }
 
-        // CONTROL DE RUTAS: Alumno o Administrador
+        // CONTROL DE VISTAS
         if (esAdmin) {
             document.getElementById('vista-admin').classList.remove('hidden');
             document.getElementById('vista-admin').classList.add('flex');
@@ -186,7 +191,7 @@
             document.getElementById('vista-alumno').classList.remove('hidden');
         }
 
-        // LÓGICA MODO ALUMNO: Registro Autónomo
+        // REGISTRO DE ALUMNOS
         document.getElementById('btn-alumno-registrar').addEventListener('click', async () => {
             const dni = document.getElementById('al-dni').value.trim();
             const nombre = document.getElementById('al-nombre').value.trim();
@@ -232,7 +237,7 @@
             }
         });
 
-        // LÓGICA MODO ADMINISTRADOR: Cargar y sincronizar con Nube
+        // CONTROL DESDE ADMINISTRADOR
         async function cargarDatosDesdeSheets() {
             try {
                 const r = await fetch(SCRIPT_URL);
@@ -283,27 +288,26 @@
             cargarDatosDesdeSheets();
         }
 
-        // ESCÁNER QR EN LA ENTRADA CON RESTRICCIÓN DE HORARIOS Y PITIDOS
+        // INICIALIZACIÓN DEL ESCÁNER CON FILTRO HORARIO
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 200 });
             scan.render(async (dniLeido) => {
                 
-                // 1. Validar si está en un día y horario de clase permitido
                 if (!verificarHorarioValido()) {
                     emitirPitido('error');
-                    mostrarViñeta("Escaneo bloqueado: Fuera del día u horario de clases establecido.", "error");
+                    mostrarViñeta("Escaneo denegado: Fuera de los días y horarios fijados.", "error");
                     return;
                 }
 
                 let al = alumnos.find(a => a.dni === dniLeido.trim());
                 if (al) {
                     if (al.estado === "Presente") {
-                        emitirPitido('advertencia'); // Pitido de advertencia
-                        mostrarViñeta(`${al.apellido} ya marcó presente hoy.`, "warning");
+                        emitirPitido('advertencia');
+                        mostrarViñeta(`${al.apellido} ya tiene el presente asignado hoy.`, "warning");
                         return;
                     }
                     
-                    emitirPitido('exito'); // Pitido de éxito ("Presente")
+                    emitirPitido('exito');
                     mostrarViñeta(`Presente: ${al.apellido}, ${al.nombre}`, "success");
                     
                     await fetch(SCRIPT_URL, {
@@ -312,13 +316,13 @@
                     });
                     cargarDatosDesdeSheets();
                 } else {
-                    emitirPitido('error'); // Pitido grave de error
-                    mostrarViñeta("DNI no encontrado en el padrón", "error");
+                    emitirPitido('error');
+                    mostrarViñeta("El DNI no figura en el padrón.", "error");
                 }
             });
         }
 
-        // DESCARGAS (EXCEL Y PDF)
+        // DESCARGAS
         document.getElementById('btn-excel').addEventListener('click', () => {
             const s = XLSX.utils.json_to_sheet(alumnos);
             const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, "Asistencia N1");
@@ -334,5 +338,4 @@
         });
     </script>
 </body>
-    </html>
-    
+</html>
