@@ -3,21 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Sistema Unificado Nivel 1</title>
+    <title>CCI - Sistema Unificado Nivel 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        /* Efecto Marca de Agua sutil con el LOGO OFICIAL DE CCI */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; 
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb2vUYikyevx8z8Bkg1x5XW-PrUv-9DzfTIPugqois49rI9fhCR-GOpVWl&s=10'); 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 75% auto; 
+            opacity: 0.05; 
+            pointer-events: none;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center antialiased pb-10">
+<body class="text-slate-800 font-sans min-h-screen flex flex-col items-center antialiased pb-10" style="background-color: #fafbfd;">
 
     <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3.5"></div>
 
-        <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
+    <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">Nivel 1</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Sistema de asistencias</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">CCI - Control de Asistencia y Autogestión</p>
     </div>
 
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
@@ -43,7 +63,7 @@
         </form>
 
         <div id="al-qr-box" class="hidden mt-6 p-5 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50/30 flex-col items-center">
-            <span class="font-extrabold text-pink-700 text-xs uppercase mb-3">¡Inscripción Exitosa! Sacale captura a tu QR:</span>
+            <span class="font-extrabold text-pink-700 text-xs uppercase mb-3"></span>
             <div id="al-qrcode" class="mx-auto p-3 bg-white rounded-xl shadow-md"></div>
             <span id="al-qr-label" class="text-xs font-bold text-slate-700 mt-3 mb-4 bg-white px-2 py-1 rounded border"></span>
             <button type="button" id="btn-al-descargar" class="bg-slate-800 text-white text-xs font-bold py-2 px-4 rounded-lg">📥 Guardar en el Celular</button>
@@ -98,8 +118,8 @@
     </div>
 
     <script>
-        // --- ⚠️ COLOCÁ ACÁ TU URL DE APPS SCRIPT DE GOOGLE ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyU131QEp0Ihv1uergOh0iOyLjB3OYddweU7mF7oDP1mUh3Qq7aTKNv9LPg4EupQg_e/exec";
+        // --- ⚠️ REEMPLAZÁ ACÁ TU URL DE EXEC DE GOOGLE SHEETS ---
+        const SCRIPT_URL = "TU_URL_DE_EXEC_AQUÍ";
 
         let alumnos = [];
         const urlParams = new URLSearchParams(window.location.search);
@@ -144,22 +164,22 @@
                     oscillator.stop(audioCtx.currentTime + 0.35);
                 }
             } catch (e) {
-                console.log("Audio en espera.");
+                console.log("Audio Bloqueado.");
             }
         }
 
-        // Horarios requeridos los domingos y viernes
+        // Verificación de días y horarios requeridos
         function verificarHorarioValido() {
             const ahora = new Date();
             const diaSemana = ahora.getDay(); 
             const horaActual = ahora.getHours() + (ahora.getMinutes() / 60);
 
-            if (diaSemana === 0) {
+            if (diaSemana === 0) { // Domingo
                 if ((horaActual >= 9.5 && horaActual <= 12.0) || (horaActual >= 17.0 && horaActual <= 22.5)) {
                     return true;
                 }
             }
-            if (diaSemana === 5) {
+            if (diaSemana === 5) { // Viernes
                 if (horaActual >= 19.0 && horaActual <= 22.5) {
                     return true;
                 }
@@ -176,7 +196,6 @@
             setTimeout(() => vineta.remove(), 4000);
         }
 
-        // Función del Cartel Gigante bajo el escáner
         function flashearCartelGigante(texto, tipo) {
             const cartel = document.getElementById('cartel-gigante');
             const txt = document.getElementById('cartel-texto-grande');
@@ -190,10 +209,7 @@
             } else {
                 cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-red-100 text-red-800 border-red-300 block";
             }
-            
-            setTimeout(() => {
-                cartel.classList.add('hidden');
-            }, 3500);
+            setTimeout(() => { cartel.classList.add('hidden'); }, 3500);
         }
 
         if (esAdmin) {
@@ -203,74 +219,59 @@
             inicializarEscaner();
         } else {
             document.getElementById('vista-alumno').classList.remove('hidden');
+            document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // REGISTRO DE ALUMNOS
+        // REGISTRO DE ALUMNOS (FUEGOS ARTIFICIALES Y BLOQUEO INTEGRADO)
         document.getElementById('btn-alumno-registrar').addEventListener('click', async () => {
-                document.getElementById('btn-alumno-registrar').addEventListener('click', async () => {
             const dni = document.getElementById('al-dni').value.trim();
             const nombre = document.getElementById('al-nombre').value.trim();
             const apellido = document.getElementById('al-apellido').value.trim();
 
-            if (!dni || !nombre || !apellido) {
-                mostrarViñeta("Por favor, completa todos los campos", "error");
-                return;
-            }
+            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido (Solo números de 7 u 8 dígitos)", "error");
+            if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
 
-            mostrarCarga(true);
+            document.getElementById('btn-alumno-registrar').innerText = "Procesando...";
+            document.getElementById('btn-alumno-registrar').disabled = true;
 
             try {
-                const response = await fetch(URL_API, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ action: 'registrarAlumno', dni, nombre, apellido })
+                const res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "registrar", dni, nombre, apellido })
                 });
-
-                const r = await response.json();
-                mostrarCarga(false);
-
+                const r = await res.json();
+                
                 if (r.status === "success") {
-                    // 1. DISPARAMOS LOS FUEGOS ARTIFICIALES (CONFETI)
-                    if (typeof confetti === 'function') {
-                        confetti({
-                            particleCount: 150,
-                            spread: 70,
-                            origin: { y: 0.6 }
-                        });
-                    }
+                    // 1. DISPARAMOS LOS FUEGOS ARTIFICIALES
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-                    // 2. OCULTAMOS EL FORMULARIO POR COMPLETO
+                    // 2. OCULTAMOS EL FORMULARIO (Evita registros múltiples)
                     document.getElementById('form-alumno').classList.add('hidden');
                     
-                    // 3. MOSTRAMOS EL CONTENEDOR DEL QR
+                    // 3. MOSTRAMOS EL QR
                     document.getElementById('al-qr-box').classList.remove('hidden');
                     document.getElementById('al-qr-box').classList.add('flex');
-                    
-                    // 4. LIMPIAMOS Y GENERAMOS EL QR NUEVO
                     document.getElementById('al-qrcode').innerHTML = "";
                     new QRCode(document.getElementById('al-qrcode'), { text: dni, width: 150, height: 150, colorDark: "#1a365d" });
                     
-                    // 5. PONEMOS EL CARTEL DE ÉXITO ESTILO FIESTA
+                    // 4. CARTEL DE ÉXITO ESTILO FIESTA GIGANTE
                     document.getElementById('al-qr-box').querySelector('span').innerHTML = 
                         "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
                         "<div class='text-lg font-black text-pink-700 uppercase'>¡Registro exitoso!</div>" +
-                        "<div class='text-sm text-slate-600 mb-4'>¡Bienvenido a Nivel 1!</div>";
+                        "<div class='text-xs text-slate-500 mb-4 font-normal lowercase tracking-wide'>¡Bienvenido a Nivel 1! Capturá o guardá tu QR</div>";
                         
-                    // 6. ASIGNAMOS EL NOMBRE DEL ALUMNO A LA ETIQUETA
                     document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
                 } else {
-                    mostrarViñeta(r.message || "Error al registrar", "error");
+                    mostrarViñeta(r.message, "error");
                 }
-            } catch (error) {
-                mostrarCarga(false);
-                mostrarViñeta("Error de conexión en la nube", "error");
-                console.error(error);
+            } catch(e) {
+                mostrarViñeta("Error de conexión a la nube", "error");
             }
+            document.getElementById('btn-alumno-registrar').innerText = "Registrarme y Crear mi QR";
+            document.getElementById('btn-alumno-registrar').disabled = false;
         });
 
-
-        // DESCARGA REPARADA: Fuerza fondo blanco y máxima nitidez (Elimina fondo negro de algunos celus)
+        // DESCARGA DE QR COMPATIBLE CON FONDO BLANCO PURO
         document.getElementById('btn-al-descargar').addEventListener('click', () => {
             const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
             if (qrCanvas) {
@@ -281,36 +282,22 @@
                 
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, nuevoCanvas.width, nuevoCanvas.height);
-                
-                ctx.imageSmoothingEnabled = false;
-                ctx.mozImageSmoothingEnabled = false;
-                ctx.webkitImageSmoothingEnabled = false;
-                ctx.msImageSmoothingEnabled = false;
-                
                 ctx.drawImage(qrCanvas, 0, 0);
                 
                 const a = document.createElement('a');
                 a.download = `Credencial_CCI_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
                 a.href = nuevoCanvas.toDataURL('image/png', 1.0);
                 a.click();
-            } else {
-                const img = document.getElementById('al-qrcode').querySelector('img');
-                if (img) {
-                    const a = document.createElement('a');
-                    a.download = `Credencial_CCI_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
-                    a.href = img.src;
-                    a.click();
-                }
             }
         });
 
-        // CONTROL DESDE ADMINISTRADOR
+        // CONTROL DE ASISTENCIA (COORDINACIÓN)
         async function cargarDatosDesdeSheets() {
             try {
                 const r = await fetch(SCRIPT_URL);
                 alumnos = await r.json();
                 actualizarTabla();
-                document.getElementById('status').innerText = "SISTEMA ONLINE: DATOS SINCRONIZADOS.";
+                document.getElementById('status').innerText = "SISTEMA CCI ONLINE: DATOS SINCRONIZADOS.";
             } catch (e) {
                 document.getElementById('status').innerText = "🔴 ERROR DE CONEXIÓN AL SERVIDOR.";
             }
@@ -321,7 +308,6 @@
             tbody.innerHTML = "";
             alumnos.sort((a,b) => a.apellido.localeCompare(b.apellido)).forEach((al, idx) => {
                 const tr = document.createElement('tr');
-                
                 let colorFila = "hover:bg-slate-50";
                 let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
                 
@@ -340,7 +326,7 @@
                     <td class="p-3 text-center font-extrabold text-sm">${al.faltas}</td>
                     <td class="p-3">${badgeEstado}</td>
                     <td class="p-3 no-export">
-                        <select onchange="modificarDesdeAdmin(${idx}, this.value)" class="p-1 border rounded text-xs bg-white text-slate-800">
+                        <select onchange="modificarDesdeAdmin(${idx}, this.value)" class="p-1 border rounded text-xs bg-white">
                             <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
                             <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
                         </select>
@@ -354,16 +340,13 @@
             const al = alumnos[idx];
             al.estado = nuevoEstado;
             document.getElementById('status').innerText = "Guardando cambio en Google Sheets...";
-            
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     body: JSON.stringify({ action: "actualizar", dni: al.dni, faltas: al.faltas, estado: nuevoEstado })
                 });
                 mostrarViñeta("Sincronizado con éxito", "success");
-            } catch(e) {
-                mostrarViñeta("Error al guardar en la nube", "error");
-            }
+            } catch(e) { mostrarViñeta("Error al guardar en la nube", "error"); }
             cargarDatosDesdeSheets();
         }
 
@@ -371,6 +354,7 @@
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render(async (dniLeido) => {
                 
+                // CONTROL DE HORARIO REINSTALADO
                 if (!verificarHorarioValido()) {
                     emitirPitido('error');
                     mostrarViñeta("Escaneo denegado: Fuera de horario.", "error");
@@ -389,7 +373,7 @@
 
                     if (al.faltas >= 4) {
                         emitirPitido('error');
-                        mostrarViñeta(`Atención: Alumno en condición de LIBRE.`, "error");
+                        mostrarViñeta("Atención: Alumno en condición de LIBRE.", "error");
                         flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
                     } else {
                         emitirPitido('exito');
@@ -410,7 +394,7 @@
             });
         }
 
-        // DESCARGAS
+        // REPORTES (EXCEL Y PDF REINSTALADOS)
         document.getElementById('btn-excel').addEventListener('click', () => {
             const s = XLSX.utils.json_to_sheet(alumnos);
             const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, "Asistencia N1");
@@ -425,6 +409,5 @@
             });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
