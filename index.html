@@ -9,24 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-        <style>
-        /* Efecto Marca de Agua sutil con el LOGO OFICIAL DE CCI */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1; /* Lo manda detrás de absolutamente todo */
-            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb2vUYikyevx8z8Bkg1x5XW-PrUv-9DzfTIPugqois49rI9fhCR-GOpVWl&s=10'); 
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: 75% auto; /* Ajusta qué tan grande se ve el escudo en el centro */
-            opacity: 0.05; /* Un 5% de opacidad para que sea una marca de agua sutil y no tape el texto */
-            pointer-events: none;
-        }
-        </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center antialiased pb-10">
 
