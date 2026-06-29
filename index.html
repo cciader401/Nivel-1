@@ -224,28 +224,22 @@
                 });
                 const r = await res.json();
                 
-                                if (r.status === "success") {
-                    // DISPARAMOS LOS FUEGOS ARTIFICIALES
-                    confetti({
-                        particleCount: 150,
-                        spread: 70,
-                        origin: { y: 0.6 }
-                    });
-
-                    // OCULTAMOS FORMULARIO
+ if (r.status === "success") {
+                    mostrarViñeta("¡Registro guardado en la base de datos!", "success");
+                    
+                    // 1. OCULTAMOS EL FORMULARIO POR COMPLETO (Ya no pueden escribir nada más)
                     document.getElementById('form-alumno').classList.add('hidden');
+                    
+                    // 2. Mostramos el contenedor del QR
                     document.getElementById('al-qr-box').classList.remove('hidden');
                     document.getElementById('al-qr-box').classList.add('flex');
                     
+                    // 3. Limpiamos y generamos el QR
                     document.getElementById('al-qrcode').innerHTML = "";
                     new QRCode(document.getElementById('al-qrcode'), { text: dni, width: 150, height: 150, colorDark: "#1a365d" });
                     
-                    // CARTEL DE ÉXITO ESTILO FIESTA
-                    document.getElementById('al-qr-box').querySelector('span').innerHTML = 
-                        "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
-                        "<div class='text-lg font-black text-pink-700 uppercase'>¡Registro exitoso!</div>" +
-                        "<div class='text-sm text-slate-600 mb-4'>¡Bienvenido a Nivel 1!</div>";
-                        
+                    // 4. Ponemos el cartel de éxito gigante y el nombre del alumno
+                    document.getElementById('al-qr-box').querySelector('span').innerHTML = "⛪ ¡TE REGISTRASTE CON ÉXITO!<br><span class='text-[11px] text-slate-500 font-normal lowercase mt-1 block'>Guardá tu credencial para la entrada</span>";
                     document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
                 } else {
 
