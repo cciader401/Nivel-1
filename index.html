@@ -37,7 +37,7 @@
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">Nivel 1</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control de Asistencia</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control de Asistencias</p>
     </div>
 
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
@@ -86,18 +86,21 @@
 
                 <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                     <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Horarios Habilitados:</strong>
-                    Viernes: 19:00 a 22:30<br>
-                    Domingos: 09:30 a 12:00 y 17:00 a 22:30
+                    Viernes: 19:00 a 22:30 <br>
+                    Domingos: 09:30 a 12:00 y 17:00 a 22:30 
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
                     <h2 class="text-lg font-bold text-slate-800 mb-1">Planilla en Tiempo Real (Nivel 1)</h2>
-                    <div class="flex gap-2 my-4 download-actions">
-                        <button class="bg-[#1f7244] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-excel">🟢 Excel</button>
+                    
+                    <div class="flex flex-wrap gap-2 my-4 download-actions">
+                        <button class="bg-[#1f7244] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-excel">🟢 Todo (Excel)</button>
                         <button class="bg-[#c0392b] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-pdf">🔴 Reporte PDF</button>
+                        <button class="bg-[#8e44ad] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-faltas">📊 Separar por Faltas (Excel)</button>
                     </div>
+
                     <div class="overflow-x-auto rounded-xl border border-slate-100">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
@@ -242,23 +245,17 @@
                 const r = await res.json();
                 
                 if (r.status === "success") {
-                    // 1. DISPARAMOS LOS FUEGOS ARTIFICIALES
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-                    // 2. OCULTAMOS EL FORMULARIO (Evita registros múltiples)
                     document.getElementById('form-alumno').classList.add('hidden');
-                    
-                    // 3. MOSTRAMOS EL QR
                     document.getElementById('al-qr-box').classList.remove('hidden');
                     document.getElementById('al-qr-box').classList.add('flex');
                     document.getElementById('al-qrcode').innerHTML = "";
                     new QRCode(document.getElementById('al-qrcode'), { text: dni, width: 150, height: 150, colorDark: "#1a365d" });
                     
-                    // 4. CARTEL DE ÉXITO ESTILO FIESTA GIGANTE
                     document.getElementById('al-qr-box').querySelector('span').innerHTML = 
                         "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
                         "<div class='text-lg font-black text-pink-700 uppercase'>¡Registro exitoso!</div>" +
-                        "<div class='text-xs text-slate-500 mb-4 font-normal lowercase tracking-wide'>¡Bienvenido a Nivel 1! <br>Capturá o guardá tu QR</div>";
+                        "<div class='text-xs text-slate-500 mb-4 font-normal lowercase tracking-wide'>¡Bienvenido a Nivel 1! Capturá o guardá tu QR</div>";
                         
                     document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
                 } else {
@@ -304,23 +301,22 @@
         }
 
         function actualizarTabla() {
-                function actualizarTabla() {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
             
             // ---------------------------------------------------------
-            // CORRECCIÓN FIJA: ORDENAR DE MENOR A MAYOR FALTAS, Y LUEGO ALFABÉTICO
+            // NUEVO ORDENAMIENTO DE DOBLE CRITERIO INTEGRADO (LÍNEAS 264-282)
             // ---------------------------------------------------------
             alumnos.sort((a, b) => {
                 const faltasA = parseInt(a.faltas) || 0;
                 const faltasB = parseInt(b.faltas) || 0;
 
-                // 1º Criterio: Si las faltas son distintas, van de menos a más
+                // 1º Criterio: Ordenar por cantidad de faltas (Menor a Mayor)
                 if (faltasA !== faltasB) {
                     return faltasA - faltasB;
                 }
 
-                // 2º Criterio: Si tienen las mismas faltas, desempata el abecedario por Apellido
+                // 2º Criterio: Si tienen las mismas faltas, ordena alfabéticamente por Apellido
                 return a.apellido.localeCompare(b.apellido);
             });
             // ---------------------------------------------------------
@@ -373,7 +369,7 @@
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render(async (dniLeido) => {
                 
-                // CONTROL DE HORARIO REINSTALADO
+                // CONTROL DE HORARIO
                 if (!verificarHorarioValido()) {
                     emitirPitido('error');
                     mostrarViñeta("Escaneo denegado: Fuera de horario.", "error");
@@ -390,15 +386,17 @@
                         return;
                     }
 
+                    // CONTROL DE ALUMNOS LIBRES (BLOQUEADO TOTALMENTE CON EL RETURN NUEVO)
                     if (al.faltas >= 4) {
                         emitirPitido('error');
-                        mostrarViñeta("Atención: Alumno en condición de LIBRE.", "error");
+                        mostrarViñeta("Atención: Alumno en condición de LIBRE. Ingreso denegado.", "error");
                         flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
-                    } else {
-                        emitirPitido('exito');
-                        mostrarViñeta(`Presente: ${al.apellido}, ${al.nombre}`, "success");
-                        flashearCartelGigante(`✅ ${al.apellido}, ${al.nombre}`, "exito");
+                        return; 
                     }
+
+                    emitirPitido('exito');
+                    mostrarViñeta(`Presente: ${al.apellido}, ${al.nombre}`, "success");
+                    flashearCartelGigante(`✅ ${al.apellido}, ${al.nombre}`, "exito");
                     
                     await fetch(SCRIPT_URL, {
                         method: "POST",
@@ -413,7 +411,7 @@
             });
         }
 
-        // REPORTES (EXCEL Y PDF REINSTALADOS)
+        // REPORTES
         document.getElementById('btn-excel').addEventListener('click', () => {
             const s = XLSX.utils.json_to_sheet(alumnos);
             const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, "Asistencia N1");
@@ -426,6 +424,23 @@
             html2pdf().from(document.getElementById('area-impresion-pdf')).save().then(() => {
                 d.forEach(el => el.style.visibility = 'visible');
             });
+        });
+
+        // SCRIPT PARA SEPARAR REGULARES Y LIBRES EN PESTAÑAS (BOTÓN MORADO)
+        document.getElementById('btn-faltas').addEventListener('click', () => {
+            const regulares = alumnos.filter(a => a.faltas < 4);
+            const libres = alumnos.filter(a => a.faltas >= 4);
+            const wb = XLSX.utils.book_new();
+            
+            if (regulares.length > 0) {
+                const wsReg = XLSX.utils.json_to_sheet(regulares);
+                XLSX.utils.book_append_sheet(wb, wsReg, "Alumnos Regulares");
+            }
+            if (libres.length > 0) {
+                const wsLib = XLSX.utils.json_to_sheet(libres);
+                XLSX.utils.book_append_sheet(wb, wsLib, "Alumnos Libres");
+            }
+            XLSX.writeFile(wb, "Reporte_Final_Nivel1.xlsx");
         });
     </script>
 </body>
