@@ -63,8 +63,14 @@
             </div>
             <div class="flex flex-col">
                 <label class="text-xs font-semibold text-slate-500 mb-1">¿Quién es tu Líder? (Si nadie, poné "Ninguno"):</label>
-                <input type="text" id="al-lider" required placeholder="Ej: Felipe Luna / Ninguno" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none font-medium">
+                <input type="text" id="al-lider" required placeholder="Ej: Felipe Luna / Ninguno" oninput="evaluarCampoCelular(this.value)" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none font-medium">
             </div>
+            
+            <div id="contenedor-celular" class="hidden flex flex-col transition-all duration-300">
+                <label class="text-xs font-bold text-pink-600 mb-1">Número de Celular (Obligatorio para alumnos sin líder):</label>
+                <input type="tel" id="al-celular" placeholder="Ej: 1123456789" class="p-3 bg-pink-50/50 border border-pink-300 rounded-lg text-sm focus:border-pink-500 focus:outline-none font-semibold">
+            </div>
+
             <button type="button" id="btn-alumno-registrar" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-lg text-sm uppercase tracking-wide transition-all shadow-sm">
                 Registrarme y Crear mi QR
             </button>
@@ -171,6 +177,16 @@
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnos));
         }
 
+        function evaluarCampoCelular(valorLider) {
+            const contenedor = document.getElementById('contenedor-celular');
+            if (valorLider.toLowerCase().trim() === 'ninguno') {
+                contenedor.classList.remove('hidden');
+            } else {
+                contenedor.classList.add('hidden');
+                document.getElementById('al-celular').value = ""; 
+            }
+        }
+
         if (selectorClase) {
             selectorClase.addEventListener('change', (e) => {
                 const claseElegida = e.target.value;
@@ -185,19 +201,17 @@
             actualizarTablaFiltrada(selectorClase.value);
         }
 
+        function tratarNombreConCelular(al) {
+            const esNinguno = !al.lider || al.lider.toLowerCase().trim() === 'ninguno';
+            if (esNinguno && al.celular) {
+                return `${al.apellido.toUpperCase()}, ${al.nombre} (Cel: ${al.celular})`;
+            }
+            return `${al.apellido.toUpperCase()}, ${al.nombre}`;
+        }
+
         function restarFalta(idxGlobal) {
             if (alumnos[idxGlobal].faltas > 0) {
                 alumnos[idxGlobal].faltas -= 1;
-                guardarEnLocalStorage();
-                actualizarTablaFiltrada(selectorClase.value);
-            }
-        }
-
-        function editarFaltasManual(idxGlobal) {
-            let actual = alumnos[idxGlobal].faltas;
-            let nueva = prompt(`Faltas para ${alumnos[idxGlobal].apellido}:`, actual);
-            if (nueva !== null && !isNaN(nueva) && nueva.trim() !== "") {
-                alumnos[idxGlobal].faltas = parseInt(nueva);
                 guardarEnLocalStorage();
                 actualizarTablaFiltrada(selectorClase.value);
             }
@@ -223,30 +237,22 @@
             actualizarTablaFiltrada(selectorClase.value);
         }
 
-        // ==========================================
-        // ACCIÓN 1: LIMPIAR ASISTENCIA DEL DIA (SOLO LA CLASE SELECCIONADA)
-        // ==========================================
         function limpiarAsistenciaDelDia() {
             const claseActiva = selectorClase.value;
-            if (!confirm(`¿Querés poner a todos los alumnos de '${claseActiva}' en Ausente para la próxima clase? (Las faltas acumuladas NO se tocarán).`)) {
+            if (!confirm(`¿Querés poner a todos los alumnos de '${claseActiva}' en Ausente para la próxima clase?`)) {
                 return;
             }
             alumnos.forEach(al => {
-                if (al.clase === claseActiva) {
-                    al.estado = "Ausente";
-                }
+                if (al.clase === claseActiva) { al.estado = "Ausente"; }
             });
             guardarEnLocalStorage();
             actualizarTablaFiltrada(claseActiva);
             alert(`📅 Aula de '${claseActiva}' reiniciada. Todos vuelven a estar Ausentes.`);
         }
 
-        // ==========================================
-        // ACCIÓN 2: CIERRE DE CICLO EXCLUSIVO CON LÓGICA DE FALTAS DIFERENCIADA
-        // ==========================================
         function finalizarCicloDeEstaClase() {
             const claseActiva = selectorClase.value;
-            if (!confirm(`⚠ ATENCIÓN: Vas a finalizar el ciclo de '${claseActiva}'.\n\nSolo egresarán quienes cumplan la asistencia requerida y tengan nota de examen aprobada (7 o más).\nSe limpiará la planilla para la próxima temporada.`)) {
+            if (!confirm(`⚠ ATENCIÓN: Vas a finalizar el ciclo de '${claseActiva}'.\n\nSolo egresarán quienes cumplan la asistencia requerida y tengan nota aprobada (7 o más).`)) {
                 return;
             }
 
@@ -259,14 +265,9 @@
                     const tieneNotaAprobada = al.nota !== "" && parseFloat(al.nota) >= 7;
                     
                     if (al.faltas <= faltasMaximasPermitidas && tieneNotaAprobada) {
-                        if (!al.nivelesAprobados.includes(claseActiva)) {
-                            al.nivelesAprobados.push(claseActiva);
-                        }
+                        if (!al.nivelesAprobados.includes(claseActiva)) { al.nivelesAprobados.push(claseActiva); }
                     }
-                    al.faltas = 0;
-                    al.nota = "";
-                    al.estado = "Ausente";
-                    al.historial = [];
+                    al.faltas = 0; al.nota = ""; al.estado = "Ausente"; al.historial = [];
                 }
             });
 
@@ -275,9 +276,6 @@
             alert(`🎓 Ciclo cerrado para '${claseActiva}'. Base de datos histórica actualizada.`);
         }
 
-        // ==========================================
-        // RENDERS DE PLANILLA EN TIEMPO REAL
-        // ==========================================
         function actualizarTablaFiltrada(claseFiltro) {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
@@ -313,11 +311,13 @@
                     badgeEstado += ` <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-orange-500 text-white">📉 REPROBADO</span>`;
                 }
 
+                const nombreCeldaHTML = tratarNombreConCelular(al);
+
                 tr.className = `border-b border-slate-100 ${colorFila}`;
                 tr.innerHTML = `
                     <td class="p-3">
                         <div class="font-semibold text-slate-800 flex items-center gap-2">
-                            ${al.apellido.toUpperCase()}, ${al.nombre}
+                            ${nombreCeldaHTML}
                             <button onclick="eliminarAlumno(${idxGlobal})" title="Eliminar alumno" class="text-slate-300 hover:text-red-600 text-[11px] transition-colors">🗑️</button>
                         </div>
                         <div class="text-[10px] text-slate-400 font-normal mt-0.5 flex items-center gap-1.5">
@@ -372,17 +372,20 @@
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // ==========================================
-        // REGISTRO DE ALUMNOS E INSCRIPCIÓN FILTRADA
-        // ==========================================
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
             const clase = document.getElementById('al-clase').value;
             const nombre = document.getElementById('al-nombre').value.trim();
             const apellido = document.getElementById('al-apellido').value.trim();
             let lider = document.getElementById('al-lider').value.trim();
+            const celular = document.getElementById('al-celular').value.trim();
 
             if(!nombre || !apellido) return alert("Faltan ingresar datos básicos.");
             if(!lider) lider = "Ninguno";
+
+            const esLiderNinguno = lider.toLowerCase() === 'ninguno';
+            if (esLiderNinguno && !celular) {
+                return alert("🛑 Campo Requerido: Por favor, cargá un número de celular de contacto para continuar.");
+            }
 
             const qrID = `${apellido.toLowerCase()}_${nombre.toLowerCase()}`.replace(/\s+/g, '');
             let alumnoExistente = alumnos.find(a => `${a.apellido.toLowerCase()}_${a.nombre.toLowerCase()}`.replace(/\s+/g, '') === qrID);
@@ -393,23 +396,19 @@
 
             if (alumnoExistente) {
                 const aprobados = alumnoExistente.nivelesAprobados || [];
-                if (clase === "Nivel 1" && !aprobados.includes("ABC")) {
-                    return alert(`🛑 REQUISITO BLOQUEADO: No podés cursar Nivel 1 porque no registrás la aprobación de 'ABC'.`);
-                }
-                if (clase === "Nivel 2" && !aprobados.includes("Nivel 1")) {
-                    return alert(`🛑 REQUISITO BLOQUEADO: Para ingresar a Nivel 2 es obligatorio haber aprobado el 'Nivel 1'.`);
-                }
-                if (clase === "Nivel 3 y Escuela de Líderes" && !aprobados.includes("Nivel 2")) {
-                    return alert(`🛑 REQUISITO BLOQUEADO: Debés haber aprobado el 'Nivel 2' para inscribirte en la Escuela de Líderes.`);
-                }
+                if (clase === "Nivel 1" && !aprobados.includes("ABC")) { return alert(`🛑 REQUISITO BLOQUEADO: No podés cursar Nivel 1 porque no registrás la aprobación de 'ABC'.`); }
+                if (clase === "Nivel 2" && !aprobados.includes("Nivel 1")) { return alert(`🛑 REQUISITO BLOQUEADO: Para ingresar a Nivel 2 es obligatorio haber aprobado el 'Nivel 1'.`); }
+                if (clase === "Nivel 3 y Escuela de Líderes" && !aprobados.includes("Nivel 2")) { return alert(`🛑 REQUISITO BLOQUEADO: Debés haber aprobado el 'Nivel 2' para inscribirte en la Escuela de Líderes.`); }
+                
                 alumnoExistente.clase = clase;
                 alumnoExistente.lider = lider;
+                alumnoExistente.celular = esLiderNinguno ? celular : "";
                 alumnoExistente.faltas = 0;
                 alumnoExistente.nota = "";
                 alumnoExistente.estado = "Ausente";
                 alumnoExistente.historial = [];
             } else {
-                alumnos.push({ nombre, apellido, faltas: 0, nota: "", estado: "Ausente", clase: clase, lider: lider, historial: [], nivelesAprobados: [] });
+                alumnos.push({ nombre, apellido, faltas: 0, nota: "", estado: "Ausente", clase: clase, lider: lider, celular: esLiderNinguno ? celular : "", historial: [], nivelesAprobados: [] });
             }
 
             guardarEnLocalStorage();
@@ -515,21 +514,21 @@
                         const totalAsistencias = al.historial ? al.historial.length : 0;
                         const notaMostrable = al.nota !== "" ? al.nota : "Sin nota";
 
-                        let condicion = "🎓 EGRESADO";
-                        if (al.faltas >= limiteLibre) condicion = "🛑 LIBRE POR FALTAS";
-                        else if (al.nota !== "" && parseFloat(al.nota) < 7) condicion = "📉 REPROBADO EXAMEN";
-                        else if (al.nota === "") condicion = "⏳ PENDIENTE EVALUACIÓN";
+                        let cond = "🎓 EGRESADO";
+                        if (al.faltas >= limiteLibre) cond = "🛑 LIBRE POR FALTAS";
+                        else if (al.nota !== "" && parseFloat(al.nota) < 7) cond = "📉 REPROBADO EXAMEN";
+                        else if (al.nota === "") cond = "⏳ PENDIENTE EVALUACIÓN";
 
                         let fila = {
                             "CLASE": clase,
                             "LÍDER RESPONSABLE": lider.toUpperCase(),
-                            "ALUMNO": `${al.apellido.toUpperCase()}, ${al.nombre}`,
+                            "ALUMNO": tratarNombreConCelular(al),
                             "FALTAS ACUMULADAS": al.faltas,
                             "NOTA EXAMEN": notaMostrable
                         };
 
                         if (tipoReporte === 'final') {
-                            fila["CONDICIÓN FINAL"] = condicion;
+                            fila["CONDICIÓN FINAL"] = cond;
                         } else {
                             fila["CLASES ASISTIDAS"] = totalAsistencias;
                             fila["ESTADO HOY"] = al.estado;
@@ -585,7 +584,7 @@
                         }
                         
                         html += `<tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">${al.apellido.toUpperCase()}, ${al.nombre}</td>
+                            <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">${tratarNombreConCelular(al)}</td>
                             <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color:#475569;">${al.faltas}</td>
                             <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color:#475569;">${al.nota !== "" ? al.nota : '-'}</td>
                             <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">${egresaStatus}</td>
