@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
+        /* Efecto Marca de Agua sutil con el LOGO OFICIAL DE CCI */
         body::before {
             content: "";
             position: fixed;
@@ -36,10 +37,9 @@
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 id="header-titulo" class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">CCI ASISTENCIAS</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control Multiclase Seleccionable</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control Multiclase Persistente</p>
     </div>
 
-    <!-- VISTA ALUMNO (INSCRIPCIÓN Y GENERACIÓN DE QR) -->
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Inscripción a Clase</h2>
         <p class="text-xs text-slate-400 mb-6">Ingresá tus datos y seleccioná tu nivel para generar tu credencial de acceso.</p>
@@ -80,10 +80,8 @@
         </div>
     </div>
 
-    <!-- VISTA ADMINISTRADOR -->
     <div id="vista-admin" class="hidden w-[95%] max-w-5xl flex-col items-center">
         
-        <!-- SELECTOR DINÁMICO DE CLASES -->
         <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <div class="text-left">
                 <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Clase / Ver Aula:</label>
@@ -95,12 +93,11 @@
                 </select>
             </div>
             <div id="status" class="bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
-                ⚠️ PROTOTIPO: MOSTRANDO LISTAS SEPARADAS POR CLASE
+                💾 MODO PRUEBA: GUARDANDO EN ALMACENAMIENTO LOCAL
             </div>
         </div>
 
         <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <!-- PANEL DEL ESCÁNER -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:col-span-1">
                 <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-2">📸 Escáner de Entrada</h2>
                 <div id="reader" class="w-full max-w-[260px] mx-auto rounded-xl overflow-hidden shadow-inner !border-0"></div>
@@ -110,12 +107,11 @@
                 </div>
 
                 <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota de Simulación:</strong>
-                    El escáner detectará automáticamente a qué clase pertenece el alumno al leer su código.
+                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota del Escáner:</strong>
+                    El lector identificará al alumno y actualizará su estado en la clase correspondiente de forma inmediata.
                 </div>
             </div>
 
-            <!-- PANEL DE LA PLANILLA FILTRADA -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
                     <h2 id="titulo-planilla" class="text-lg font-bold text-slate-800 mb-1">Planilla en Tiempo Real (Nivel 1)</h2>
@@ -145,31 +141,44 @@
     </div>
 
     <script>
-        // BASE DE DATOS LOCAL DISTRIBUIDA (Cada alumno tiene su propiedad "clase")
-        let alumnos = [
-            // Alumnos de la Escuela ABC
+        // BASE DE DATOS LOCAL INICIAL (Se distribuyen alumnos de muestra por materia)
+        let alumnosIniciales = [
+            // Alumnos ABC
             { dni: "10101010", nombre: "Marcos", apellido: "Acuña", faltas: 0, estado: "Ausente", clase: "ABC" },
             { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC" },
             
-            // Alumnos de Nivel 1
+            // Alumnos Nivel 1
             { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 0, estado: "Ausente", clase: "Nivel 1" },
             { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente", clase: "Nivel 1" },
-            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, // Libre
+            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, // Alumno Libre
             
-            // Alumnos de Nivel 2
+            // Alumnos Nivel 2
             { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente", clase: "Nivel 2" },
             { dni: "66666666", nombre: "Diego", apellido: "Milito", faltas: 0, estado: "Ausente", clase: "Nivel 2" },
             
-            // Alumnos de Nivel 3 y Escuela de Líderes
+            // Alumnos Nivel 3 y Escuela de Líderes
             { dni: "77777777", nombre: "Esteban", apellido: "Cambiaso", faltas: 1, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" },
             { dni: "88888888", nombre: "Florencia", apellido: "Bertotti", faltas: 5, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" }
         ];
+
+        // Inicializar LocalStorage si está vacío
+        if (!localStorage.getItem('cci_alumnos')) {
+            localStorage.setItem('cci_alumnos', JSON.stringify(alumnosIniciales));
+        }
+
+        // Cargar los alumnos desde el almacenamiento local del navegador
+        let alumnos = JSON.parse(localStorage.getItem('cci_alumnos'));
 
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
         const selectorClase = document.getElementById('selector-clase');
 
-        // Escucha el cambio de clase arriba y actualiza la tabla mostrando SOLAMENTE esa clase
+        // Función para persistir datos localmente en las pruebas
+        function guardarEnLocalStorage() {
+            localStorage.setItem('cci_alumnos', JSON.stringify(alumnos));
+        }
+
+        // Filtrado en vivo al interactuar con el menú superior de administrador
         if (selectorClase) {
             selectorClase.addEventListener('change', (e) => {
                 const claseElegida = e.target.value;
@@ -178,7 +187,7 @@
             });
         }
 
-        // Sistema de pitidos
+        // Sistema de sonidos (Beeps)
         function emitirPitido(tipo = 'exito') {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -218,24 +227,25 @@
             setTimeout(() => { cartel.classList.add('hidden'); }, 3500);
         }
 
+        // Control de rutas internas
         if (esAdmin) {
             document.getElementById('vista-admin').classList.remove('hidden');
             document.getElementById('vista-admin').classList.add('flex');
-            actualizarTablaFiltrada("Nivel 1"); // Por defecto arranca mostrando Nivel 1
+            actualizarTablaFiltrada("Nivel 1"); 
             inicializarEscaner();
         } else {
             document.getElementById('vista-alumno').classList.remove('hidden');
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // ACCIÓN REGISTRO DE ALUMNO CON ASIGNACIÓN DE CLASE
+        // REGISTRO DE ALUMNO CON RECONOCIMIENTO DE ASIGNATURA
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
             const clase = document.getElementById('al-clase').value;
             const dni = document.getElementById('al-dni').value.trim();
             const nombre = document.getElementById('al-nombre').value.trim();
             const apellido = document.getElementById('al-apellido').value.trim();
 
-            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido", "error");
+            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido (Solo números de 7 u 8 dígitos)", "error");
             if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
 
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -249,16 +259,17 @@
             document.getElementById('al-qr-box').querySelector('span').innerHTML = 
                 "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
                 "<div class='text-lg font-black text-pink-700 uppercase'>¡Inscripción Exitosa!</div>" +
-                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Te has registrado correctamente.</div>";
+                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Tus datos se guardaron en la memoria local del navegador.</div>";
                 
             document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
             document.getElementById('al-qr-clase-label').innerText = `Inscripto en: ${clase}`;
 
-            // Guardamos el nuevo alumno con la clase exacta seleccionada
+            // Insertar el alumno nuevo y asegurar persistencia en el dispositivo
             alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente", clase: clase });
+            guardarEnLocalStorage();
         });
 
-        // DESCARGAR QR
+        // DESCARGAR ARCHIVO DE IMAGEN QR
         document.getElementById('btn-al-descargar').addEventListener('click', () => {
             const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
             if (qrCanvas) {
@@ -273,15 +284,14 @@
             }
         });
 
-        // FUNCIÓN CLAVE: ACTUALIZA LA TABLA FILTRANDO EXCLUSIVAMENTE POR LA CLASE ACTIVA
+        // RENDERIZAR TABLA CON FILTRADO EXCLUSIVO POR MATERIA SELECCIONADA
         function actualizarTablaFiltrada(claseFiltro) {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
             
-            // Filtramos la lista global para quedarnos solo con los de la clase actual
             let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
 
-            // Ordenamos la lista filtrada (Primero faltas, luego apellido)
+            // Doble criterio de ordenación: Faltas (Menor a Mayor) y luego Apellido
             alumnosFiltrados.sort((a, b) => {
                 const faltasA = parseInt(a.faltas) || 0;
                 const faltasB = parseInt(b.faltas) || 0;
@@ -295,7 +305,6 @@
             }
 
             alumnosFiltrados.forEach((al) => {
-                // Buscamos el índice real en el array global para cuando modifiquemos el estado manual
                 const idxGlobal = alumnos.findIndex(a => a.dni === al.dni);
 
                 const tr = document.createElement('tr');
@@ -327,13 +336,15 @@
             });
         }
 
+        // Modificación de asistencias desde el panel del Administrador
         function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
             alumnos[idxGlobal].estado = nuevoEstado;
-            mostrarViñeta("Estado actualizado", "success");
+            guardarEnLocalStorage();
+            mostrarViñeta("Estado actualizado localmente", "success");
             actualizarTablaFiltrada(selectorClase.value);
         }
 
-        // ESCÁNER INTELIGENTE: Detecta el alumno y sabe a qué clase pertenece
+        // INICIALIZACIÓN DEL LECTOR DE CÓDIGOS QR
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render((dniLeido) => {
@@ -341,38 +352,36 @@
                 let al = alumnos.find(a => a.dni === dniLeido.trim());
 
                 if (al) {
-                    // El escáner le da el presente en la clase a la que pertenece originalmente el alumno
                     if (al.estado === "Presente") {
                         emitirPitido('advertencia');
-                        mostrarViñeta(`${al.apellido} ya tiene el presente en la clase ${al.clase}.`, "warning");
+                        mostrarViñeta(`${al.apellido} ya cargó su asistencia en la clase de ${al.clase}.`, "warning");
                         flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia");
                         return;
                     }
 
                     if (al.faltas >= 4) {
                         emitirPitido('error');
-                        mostrarViñeta(`Ingreso denegado: ${al.apellido} está LIBRE.`, "error");
+                        mostrarViñeta(`Ingreso rechazado: El alumno está LIBRE.`, "error");
                         flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
                         return; 
                     }
 
                     emitirPitido('exito');
-                    mostrarViñeta(`Presente Registrado en [${al.clase}] para ${al.apellido}`, "success");
+                    mostrarViñeta(`Asistencia ok en [${al.clase}] para ${al.apellido}`, "success");
                     flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
                     
                     al.estado = "Presente";
-                    
-                    // Refresca la tabla para reflejar el cambio si justo estamos viendo la clase de ese alumno
+                    guardarEnLocalStorage();
                     actualizarTablaFiltrada(selectorClase.value);
                 } else {
                     emitirPitido('error');
-                    mostrarViñeta("DNI no registrado.", "error");
+                    mostrarViñeta("Código de DNI no identificado en la base local.", "error");
                     flashearCartelGigante("DNI DESCONOCIDO", "error");
                 }
             });
         }
 
-        // REPORTES EXCLUSIVOS DE LA CLASE EN PANTALLA
+        // DESCARGAS DE INFORMES CORRESPONDIENTES A LA CLASE ACTIVA
         document.getElementById('btn-excel').addEventListener('click', () => {
             const claseActiva = selectorClase.value;
             let filtrados = alumnos.filter(a => a.clase === claseActiva);
