@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* Efecto Marca de Agua sutil con el LOGO OFICIAL DE CCI */
         body::before {
             content: "";
             position: fixed;
@@ -37,7 +36,7 @@
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 id="header-titulo" class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">CCI ASISTENCIAS</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control Multiclase Persistente</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro, Control Multiclase y Administración Completa</p>
     </div>
 
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
@@ -83,17 +82,22 @@
     <div id="vista-admin" class="hidden w-[95%] max-w-5xl flex-col items-center">
         
         <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <div class="text-left">
+            <div class="text-left w-full sm:w-auto">
                 <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Clase / Ver Aula:</label>
-                <select id="selector-clase" class="p-3 bg-slate-50 border border-pink-500 rounded-xl font-bold text-slate-800 text-sm focus:outline-none min-w-[280px] shadow-sm">
+                <select id="selector-clase" class="p-3 bg-slate-50 border border-pink-500 rounded-xl font-bold text-slate-800 text-sm focus:outline-none min-w-[280px] shadow-sm w-full">
                     <option value="ABC">Clase: ABC</option>
                     <option value="Nivel 1" selected>Clase: Nivel 1</option>
                     <option value="Nivel 2">Clase: Nivel 2</option>
                     <option value="Nivel 3 y Escuela de Líderes">Clase: Nivel 3 y Escuela de Líderes</option>
                 </select>
             </div>
-            <div id="status" class="bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
-                💾 MODO PRUEBA: GUARDANDO EN ALMACENAMIENTO LOCAL
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                <button onclick="resetearSistema()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold px-4 py-3 rounded-xl uppercase tracking-wide transition-all shadow-sm">
+                    🚨 Resetear Sistema
+                </button>
+                <div id="status" class="bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
+                    💾 LOCALSTORAGE ACTIVO
+                </div>
             </div>
         </div>
 
@@ -127,9 +131,9 @@
                                 <tr class="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-600">
                                     <th class="p-3">Alumno</th>
                                     <th class="p-3">DNI</th>
-                                    <th class="p-3 text-center">Faltas</th>
+                                    <th class="p-3 text-center w-28">Faltas</th>
                                     <th class="p-3">Estado Aula</th>
-                                    <th class="p-3 no-export">Acción</th>
+                                    <th class="p-3 text-center no-export">Acciones / Controles</th>
                                 </tr>
                             </thead>
                             <tbody id="cuerpo-tabla" class="divide-y divide-slate-100"></tbody>
@@ -143,48 +147,82 @@
     <script>
         // BASE DE DATOS LOCAL INICIAL (Se distribuyen alumnos de muestra por materia)
         let alumnosIniciales = [
-            // Alumnos ABC
             { dni: "10101010", nombre: "Marcos", apellido: "Acuña", faltas: 0, estado: "Ausente", clase: "ABC" },
             { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC" },
-            
-            // Alumnos Nivel 1
             { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 0, estado: "Ausente", clase: "Nivel 1" },
             { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente", clase: "Nivel 1" },
-            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, // Alumno Libre
-            
-            // Alumnos Nivel 2
+            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, 
             { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente", clase: "Nivel 2" },
             { dni: "66666666", nombre: "Diego", apellido: "Milito", faltas: 0, estado: "Ausente", clase: "Nivel 2" },
-            
-            // Alumnos Nivel 3 y Escuela de Líderes
             { dni: "77777777", nombre: "Esteban", apellido: "Cambiaso", faltas: 1, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" },
             { dni: "88888888", nombre: "Florencia", apellido: "Bertotti", faltas: 5, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" }
         ];
 
-        // Inicializar LocalStorage si está vacío
         if (!localStorage.getItem('cci_alumnos')) {
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnosIniciales));
         }
 
-        // Cargar los alumnos desde el almacenamiento local del navegador
         let alumnos = JSON.parse(localStorage.getItem('cci_alumnos'));
 
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
         const selectorClase = document.getElementById('selector-clase');
 
-        // Función para persistir datos localmente en las pruebas
         function guardarEnLocalStorage() {
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnos));
         }
 
-        // Filtrado en vivo al interactuar con el menú superior de administrador
         if (selectorClase) {
             selectorClase.addEventListener('change', (e) => {
                 const claseElegida = e.target.value;
                 document.getElementById('titulo-planilla').innerText = `Planilla en Tiempo Real (${claseElegida})`;
                 actualizarTablaFiltrada(claseElegida);
             });
+        }
+
+        // FUNCIONES DE CONTROL DE FALTAS Y EDICIÓN
+        function sumarFalta(idxGlobal) {
+            alumnos[idxGlobal].faltas += 1;
+            guardarEnLocalStorage();
+            mostrarViñeta(`Falta sumada a ${alumnos[idxGlobal].apellido}`, "success");
+            actualizarTablaFiltrada(selectorClase.value);
+        }
+
+        function restarFalta(idxGlobal) {
+            if (alumnos[idxGlobal].faltas > 0) {
+                alumnos[idxGlobal].faltas -= 1;
+                guardarEnLocalStorage();
+                mostrarViñeta(`Falta corregida a ${alumnos[idxGlobal].apellido}`, "success");
+                actualizarTablaFiltrada(selectorClase.value);
+            }
+        }
+
+        function editarFaltasManual(idxGlobal) {
+            let actual = alumnos[idxGlobal].faltas;
+            let nueva = prompt(`Ingresá la cantidad exacta de faltas para ${alumnos[idxGlobal].apellido}, ${alumnos[idxGlobal].nombre}:`, actual);
+            if (nueva !== null && !isNaN(nueva) && nueva.trim() !== "") {
+                alumnos[idxGlobal].faltas = parseInt(nueva);
+                guardarEnLocalStorage();
+                mostrarViñeta("Faltas actualizadas", "success");
+                actualizarTablaFiltrada(selectorClase.value);
+            }
+        }
+
+        function eliminarAlumno(idxGlobal) {
+            let nombreCompleto = `${alumnos[idxGlobal].apellido}, ${alumnos[idxGlobal].nombre}`;
+            if (confirm(`¿Estás seguro de que querés ELIMINAR por completo a ${nombreCompleto} del sistema?`)) {
+                alumnos.splice(idxGlobal, 1);
+                guardarEnLocalStorage();
+                mostrarViñeta("Alumno eliminado con éxito", "warning");
+                actualizarTablaFiltrada(selectorClase.value);
+            }
+        }
+
+        function resetearSistema() {
+            if (confirm("🚨 ATENCIÓN: Esto borrará todos los registros del navegador y restaurará la lista de prueba limpia. ¿Continuar?")) {
+                localStorage.removeItem('cci_alumnos');
+                window.location.reload();
+            }
         }
 
         // Sistema de sonidos (Beeps)
@@ -227,7 +265,6 @@
             setTimeout(() => { cartel.classList.add('hidden'); }, 3500);
         }
 
-        // Control de rutas internas
         if (esAdmin) {
             document.getElementById('vista-admin').classList.remove('hidden');
             document.getElementById('vista-admin').classList.add('flex');
@@ -238,14 +275,14 @@
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // REGISTRO DE ALUMNO CON RECONOCIMIENTO DE ASIGNATURA
+        // REGISTRO DE ALUMNO CON ASIGNACIÓN DE CLASE
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
             const clase = document.getElementById('al-clase').value;
             const dni = document.getElementById('al-dni').value.trim();
             const nombre = document.getElementById('al-nombre').value.trim();
             const apellido = document.getElementById('al-apellido').value.trim();
 
-            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido (Solo números de 7 u 8 dígitos)", "error");
+            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido", "error");
             if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
 
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -259,17 +296,16 @@
             document.getElementById('al-qr-box').querySelector('span').innerHTML = 
                 "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
                 "<div class='text-lg font-black text-pink-700 uppercase'>¡Inscripción Exitosa!</div>" +
-                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Tus datos se guardaron en la memoria local del navegador.</div>";
+                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Tus datos se guardaron localmente.</div>";
                 
             document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
             document.getElementById('al-qr-clase-label').innerText = `Inscripto en: ${clase}`;
 
-            // Insertar el alumno nuevo y asegurar persistencia en el dispositivo
             alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente", clase: clase });
             guardarEnLocalStorage();
         });
 
-        // DESCARGAR ARCHIVO DE IMAGEN QR
+        // DESCARGAR QR
         document.getElementById('btn-al-descargar').addEventListener('click', () => {
             const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
             if (qrCanvas) {
@@ -284,14 +320,13 @@
             }
         });
 
-        // RENDERIZAR TABLA CON FILTRADO EXCLUSIVO POR MATERIA SELECCIONADA
+        // RENDERIZAR TABLA CON FILTRADO Y BOTONES DE CONTROL DE FALTA INTERNOS
         function actualizarTablaFiltrada(claseFiltro) {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
             
             let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
 
-            // Doble criterio de ordenación: Faltas (Menor a Mayor) y luego Apellido
             alumnosFiltrados.sort((a, b) => {
                 const faltasA = parseInt(a.faltas) || 0;
                 const faltasB = parseInt(b.faltas) || 0;
@@ -323,51 +358,58 @@
                 tr.innerHTML = `
                     <td class="p-3 font-semibold">${al.apellido.toUpperCase()}, ${al.nombre}</td>
                     <td class="p-3 text-slate-500 font-mono">${al.dni}</td>
-                    <td class="p-3 text-center font-extrabold text-sm">${al.faltas}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="restarFalta(${idxGlobal})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]">-</button>
+                            <span class="font-extrabold text-sm min-w-[16px]">${al.faltas}</span>
+                            <button onclick="sumarFalta(${idxGlobal})" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">+</button>
+                        </div>
+                    </td>
                     <td class="p-3">${badgeEstado}</td>
                     <td class="p-3 no-export">
-                        <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white">
-                            <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
-                            <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
-                        </select>
+                        <div class="flex items-center justify-center gap-2">
+                            <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white text-slate-700">
+                                <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
+                                <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
+                            </select>
+                            <button onclick="editarFaltasManual(${idxGlobal})" title="Editar Número Exacto" class="bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded font-bold text-[10px]">⚙️ N°</button>
+                            <button onclick="eliminarAlumno(${idxGlobal})" title="Eliminar Alumno" class="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-2 py-1 rounded font-bold text-[10px]">🗑️</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Modificación de asistencias desde el panel del Administrador
         function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
             alumnos[idxGlobal].estado = nuevoEstado;
             guardarEnLocalStorage();
-            mostrarViñeta("Estado actualizado localmente", "success");
+            mostrarViñeta("Estado actualizado", "success");
             actualizarTablaFiltrada(selectorClase.value);
         }
 
-        // INICIALIZACIÓN DEL LECTOR DE CÓDIGOS QR
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render((dniLeido) => {
-                
                 let al = alumnos.find(a => a.dni === dniLeido.trim());
 
                 if (al) {
                     if (al.estado === "Presente") {
                         emitirPitido('advertencia');
-                        mostrarViñeta(`${al.apellido} ya cargó su asistencia en la clase de ${al.clase}.`, "warning");
+                        mostrarViñeta(`${al.apellido} ya tiene el presente en la clase ${al.clase}.`, "warning");
                         flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia");
                         return;
                     }
 
                     if (al.faltas >= 4) {
                         emitirPitido('error');
-                        mostrarViñeta(`Ingreso rechazado: El alumno está LIBRE.`, "error");
+                        mostrarViñeta(`Ingreso denegado: ${al.apellido} está LIBRE.`, "error");
                         flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
                         return; 
                     }
 
                     emitirPitido('exito');
-                    mostrarViñeta(`Asistencia ok en [${al.clase}] para ${al.apellido}`, "success");
+                    mostrarViñeta(`Presente Registrado en [${al.clase}] para ${al.apellido}`, "success");
                     flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
                     
                     al.estado = "Presente";
@@ -375,13 +417,13 @@
                     actualizarTablaFiltrada(selectorClase.value);
                 } else {
                     emitirPitido('error');
-                    mostrarViñeta("Código de DNI no identificado en la base local.", "error");
+                    mostrarViñeta("DNI no registrado.", "error");
                     flashearCartelGigante("DNI DESCONOCIDO", "error");
                 }
             });
         }
 
-        // DESCARGAS DE INFORMES CORRESPONDIENTES A LA CLASE ACTIVA
+        // REPORTES
         document.getElementById('btn-excel').addEventListener('click', () => {
             const claseActiva = selectorClase.value;
             let filtrados = alumnos.filter(a => a.clase === claseActiva);
