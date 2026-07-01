@@ -112,7 +112,7 @@
 
                 <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                     <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota del Escáner:</strong>
-                    El lector identificará al alumno y actualizará su estado en la clase correspondiente de forma inmediata.
+                    El lector esperará 3 segundos tras cada lectura exitosa o fallida para evitar registros duplicados por error.
                 </div>
             </div>
 
@@ -145,7 +145,7 @@
     </div>
 
     <script>
-        // BASE DE DATOS LOCAL INICIAL (Se distribuyen alumnos de muestra por materia)
+        // BASE DE DATOS LOCAL INICIAL
         let alumnosIniciales = [
             { dni: "10101010", nombre: "Marcos", apellido: "Acuña", faltas: 0, estado: "Ausente", clase: "ABC" },
             { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC" },
@@ -159,6 +159,7 @@
         ];
 
         if (!localStorage.getItem('cci_alumnos')) {
+            document.body.style.opacity = "1"; // Evitar bloqueos visuales
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnosIniciales));
         }
 
@@ -167,6 +168,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
         const selectorClase = document.getElementById('selector-clase');
+
+        // VARIABLE CONTROLADORA DEL CANDADO DE TIEMPO PARA EL ESCÁNER
+        let escanerBloqueado = false;
 
         function guardarEnLocalStorage() {
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnos));
@@ -180,7 +184,6 @@
             });
         }
 
-        // FUNCIONES DE CONTROL DE FALTAS Y EDICIÓN
         function sumarFalta(idxGlobal) {
             alumnos[idxGlobal].faltas += 1;
             guardarEnLocalStorage();
@@ -225,7 +228,6 @@
             }
         }
 
-        // Sistema de sonidos (Beeps)
         function emitirPitido(tipo = 'exito') {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -262,7 +264,7 @@
             if (tipo === 'exito') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-emerald-100 text-emerald-800 border-emerald-300 block animate-bounce"; }
             else if (tipo === 'advertencia') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-amber-100 text-amber-800 border-amber-300 block"; }
             else { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-red-100 text-red-800 border-red-300 block"; }
-            setTimeout(() => { cartel.classList.add('hidden'); }, 3500);
+            setTimeout(() => { cartel.classList.add('hidden'); }, 3000); // Sincronizado con los 3 segundos
         }
 
         if (esAdmin) {
@@ -275,7 +277,6 @@
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // REGISTRO DE ALUMNO CON ASIGNACIÓN DE CLASE
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
             const clase = document.getElementById('al-clase').value;
             const dni = document.getElementById('al-dni').value.trim();
@@ -305,7 +306,6 @@
             guardarEnLocalStorage();
         });
 
-        // DESCARGAR QR
         document.getElementById('btn-al-descargar').addEventListener('click', () => {
             const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
             if (qrCanvas) {
@@ -320,7 +320,6 @@
             }
         });
 
-        // RENDERIZAR TABLA CON FILTRADO Y BOTONES DE CONTROL DE FALTA INTERNOS
         function actualizarTablaFiltrada(claseFiltro) {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
@@ -388,10 +387,23 @@
             actualizarTablaFiltrada(selectorClase.value);
         }
 
+        // INICIALIZACIÓN DEL LECTOR CON COOLDOWN DE 3 SEGUNDOS
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render((dniLeido) => {
+                
+                // SI EL ESCÁNER ESTÁ BLOQUEADO EN LOS 3 SEGUNDOS DE ESPERA, IGNORAR LA LECTURA
+                if (escanerBloqueado) return;
+
                 let al = alumnos.find(a => a.dni === dniLeido.trim());
+
+                // EMPEZAR PROCESAMIENTO: SE ACTIVA EL BLOQUEO INMEDIATO
+                escanerBloqueado = true;
+
+                // PROGRAMAR LA REAPERTURA DEL ESCÁNER EN 3000 MILISEGUNDOS (3 SEGUNDOS)
+                setTimeout(() => {
+                    escanerBloqueado = false;
+                }, 3000);
 
                 if (al) {
                     if (al.estado === "Presente") {
