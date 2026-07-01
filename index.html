@@ -36,12 +36,12 @@
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 id="header-titulo" class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">CCI ASISTENCIAS</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro, Control Multiclase y Administración Completa</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Gestión de Egresados, Reportes Temporales y Líderes de Crecimiento</p>
     </div>
 
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Inscripción a Clase</h2>
-        <p class="text-xs text-slate-400 mb-6">Ingresá tus datos y seleccioná tu nivel para generar tu credencial de acceso.</p>
+        <p class="text-xs text-slate-400 mb-6">Ingresá tus datos para generar tu credencial de acceso permanente.</p>
         
         <form id="form-alumno" class="space-y-4 text-left" onsubmit="return false;">
             <div class="flex flex-col">
@@ -64,6 +64,10 @@
             <div class="flex flex-col">
                 <label class="text-xs font-semibold text-slate-500 mb-1">Apellido(s):</label>
                 <input type="text" id="al-apellido" required placeholder="Tu Apellido" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-500 mb-1">¿Quién te invitó o quién es tu Líder? (Si nadie, poné "Ninguno"):</label>
+                <input type="text" id="al-lider" placeholder="Ej: Juan Carlos / Ninguno" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none font-medium">
             </div>
             <button type="button" id="btn-alumno-registrar" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-lg text-sm uppercase tracking-wide transition-all shadow-sm">
                 Registrarme y Crear mi QR
@@ -96,8 +100,25 @@
                     🚨 Resetear Sistema
                 </button>
                 <div id="status" class="bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
-                    💾 LOCALSTORAGE ACTIVO
+                    💾 CENTRAL DE CONTROL
                 </div>
+            </div>
+        </div>
+
+        <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <div class="text-left">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">📊 Centro de Descargas Avanzado (Excel / PDF)</h3>
+                <p class="text-xs text-slate-400">Seleccioná el tipo de reporte con fechas, horarios, referentes y estados de egreso.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                <select id="tipo-reporte-descarga" class="p-2.5 bg-slate-100 border rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+                    <option value="clase" selected>Reporte por Clase Activa</option>
+                    <option value="semanal">Reporte Semanal (Últimos 7 días)</option>
+                    <option value="mensual">Reporte Mensual (Últimos 30 días)</option>
+                    <option value="final">🎓 REPORTE FINAL: EGRESADOS</option>
+                </select>
+                <button onclick="exportarExcelAvanzado()" class="bg-[#1f7244] hover:bg-[#1a5f38] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm">🟢 Descargar Excel</button>
+                <button onclick="exportarPDFAvanzado()" class="bg-[#c0392b] hover:bg-[#a63024] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm">🔴 Generar PDF</button>
             </div>
         </div>
 
@@ -111,29 +132,24 @@
                 </div>
 
                 <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota del Escáner:</strong>
-                    El lector esperará 3 segundos tras cada lectura exitosa o fallida para evitar registros duplicados por error.
+                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota del Lector:</strong>
+                    Evita lecturas consecutivas bloqueándose automáticamente por 3 segundos tras un escaneo válido.
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
-                    <h2 id="titulo-planilla" class="text-lg font-bold text-slate-800 mb-1">Planilla en Tiempo Real (Nivel 1)</h2>
+                    <h2 id="titulo-planilla" class="text-lg font-bold text-slate-800 mb-4">Planilla en Tiempo Real (Nivel 1)</h2>
                     
-                    <div class="flex flex-wrap gap-2 my-4 download-actions">
-                        <button class="bg-[#1f7244] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-excel">🟢 Descargar Esta Clase (Excel)</button>
-                        <button class="bg-[#c0392b] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-pdf">🔴 Reporte PDF</button>
-                    </div>
-
                     <div class="overflow-x-auto rounded-xl border border-slate-100">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-600">
                                     <th class="p-3">Alumno</th>
-                                    <th class="p-3">DNI</th>
-                                    <th class="p-3 text-center w-28">Faltas</th>
+                                    <th class="p-3">DNI / Referente</th>
+                                    <th class="p-3 text-center w-24">Faltas</th>
                                     <th class="p-3">Estado Aula</th>
-                                    <th class="p-3 text-center no-export">Acciones / Controles</th>
+                                    <th class="p-3 text-center no-export">Controles</th>
                                 </tr>
                             </thead>
                             <tbody id="cuerpo-tabla" class="divide-y divide-slate-100"></tbody>
@@ -144,22 +160,19 @@
         </div>
     </div>
 
+    <div id="tabla-exportacion-oculta" class="hidden"></div>
+
     <script>
-        // BASE DE DATOS LOCAL INICIAL
+        // BASE DE DATOS LOCAL CON LOS NUEVOS ATRIBUTOS INCLUIDOS (Historial de asistencias con día/hora y Líderes)
         let alumnosIniciales = [
-            { dni: "10101010", nombre: "Marcos", apellido: "Acuña", faltas: 0, estado: "Ausente", clase: "ABC" },
-            { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC" },
-            { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 0, estado: "Ausente", clase: "Nivel 1" },
-            { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente", clase: "Nivel 1" },
-            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, 
-            { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente", clase: "Nivel 2" },
-            { dni: "66666666", nombre: "Diego", apellido: "Milito", faltas: 0, estado: "Ausente", clase: "Nivel 2" },
-            { dni: "77777777", nombre: "Esteban", apellido: "Cambiaso", faltas: 1, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" },
-            { dni: "88888888", nombre: "Florencia", apellido: "Bertotti", faltas: 5, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" }
+            { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC", lider: "Pastor Marcos", historial: ["30/06/2026 19:32"] },
+            { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 0, estado: "Presente", clase: "Nivel 1", lider: "Ninguno", historial: ["29/06/2026 20:15", "01/07/2026 00:05"] },
+            { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente", clase: "Nivel 1", lider: "Líder Débora", historial: ["15/06/2026 18:00"] },
+            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1", lider: "Andrés Espinoza", historial: [] }, 
+            { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente", clase: "Nivel 2", lider: "Ninguno", historial: ["20/06/2026 19:00"] }
         ];
 
         if (!localStorage.getItem('cci_alumnos')) {
-            document.body.style.opacity = "1"; // Evitar bloqueos visuales
             localStorage.setItem('cci_alumnos', JSON.stringify(alumnosIniciales));
         }
 
@@ -168,8 +181,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
         const selectorClase = document.getElementById('selector-clase');
-
-        // VARIABLE CONTROLADORA DEL CANDADO DE TIEMPO PARA EL ESCÁNER
         let escanerBloqueado = false;
 
         function guardarEnLocalStorage() {
@@ -184,10 +195,10 @@
             });
         }
 
+        // CONTROLES MANUALES DE FALTAS
         function sumarFalta(idxGlobal) {
             alumnos[idxGlobal].faltas += 1;
             guardarEnLocalStorage();
-            mostrarViñeta(`Falta sumada a ${alumnos[idxGlobal].apellido}`, "success");
             actualizarTablaFiltrada(selectorClase.value);
         }
 
@@ -195,56 +206,324 @@
             if (alumnos[idxGlobal].faltas > 0) {
                 alumnos[idxGlobal].faltas -= 1;
                 guardarEnLocalStorage();
-                mostrarViñeta(`Falta corregida a ${alumnos[idxGlobal].apellido}`, "success");
                 actualizarTablaFiltrada(selectorClase.value);
             }
         }
 
         function editarFaltasManual(idxGlobal) {
             let actual = alumnos[idxGlobal].faltas;
-            let nueva = prompt(`Ingresá la cantidad exacta de faltas para ${alumnos[idxGlobal].apellido}, ${alumnos[idxGlobal].nombre}:`, actual);
+            let nueva = prompt(`Faltas para ${alumnos[idxGlobal].apellido}:`, actual);
             if (nueva !== null && !isNaN(nueva) && nueva.trim() !== "") {
                 alumnos[idxGlobal].faltas = parseInt(nueva);
                 guardarEnLocalStorage();
-                mostrarViñeta("Faltas actualizadas", "success");
                 actualizarTablaFiltrada(selectorClase.value);
             }
         }
 
         function eliminarAlumno(idxGlobal) {
-            let nombreCompleto = `${alumnos[idxGlobal].apellido}, ${alumnos[idxGlobal].nombre}`;
-            if (confirm(`¿Estás seguro de que querés ELIMINAR por completo a ${nombreCompleto} del sistema?`)) {
+            if (confirm(`¿Eliminar por completo a ${alumnos[idxGlobal].apellido}?`)) {
                 alumnos.splice(idxGlobal, 1);
                 guardarEnLocalStorage();
-                mostrarViñeta("Alumno eliminado con éxito", "warning");
                 actualizarTablaFiltrada(selectorClase.value);
             }
         }
 
         function resetearSistema() {
-            if (confirm("🚨 ATENCIÓN: Esto borrará todos los registros del navegador y restaurará la lista de prueba limpia. ¿Continuar?")) {
+            if (confirm("🚨 ¿Restaurar base de datos limpia de pruebas?")) {
                 localStorage.removeItem('cci_alumnos');
                 window.location.reload();
             }
         }
 
-        function emitirPitido(tipo = 'exito') {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-                if (tipo === 'exito') {
-                    oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.15);
-                } else if (tipo === 'advertencia') {
-                    oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
-                } else if (tipo === 'error') {
-                    oscillator.type = 'sawtooth'; oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); 
-                    gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.35);
+        // CONTROL DE RUTA VISTA
+        if (esAdmin) {
+            document.getElementById('vista-admin').classList.remove('hidden');
+            document.getElementById('vista-admin').classList.add('flex');
+            actualizarTablaFiltrada("Nivel 1"); 
+            inicializarEscaner();
+        } else {
+            document.getElementById('vista-alumno').classList.remove('hidden');
+            document.getElementById('vista-alumno').classList.add('flex');
+        }
+
+        // INSCRIPCIÓN DE ALUMNO CON NUEVO CAMPO LÍDER
+        document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
+            const clase = document.getElementById('al-clase').value;
+            const dni = document.getElementById('al-dni').value.trim();
+            const nombre = document.getElementById('al-nombre').value.trim();
+            const apellido = document.getElementById('al-apellido').value.trim();
+            let lider = document.getElementById('al-lider').value.trim();
+
+            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido", "error");
+            if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
+            if(!lider) lider = "Ninguno";
+
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('form-alumno').classList.add('hidden');
+            document.getElementById('al-qr-box').classList.remove('hidden');
+            document.getElementById('al-qr-box').classList.add('flex');
+            document.getElementById('al-qrcode').innerHTML = "";
+            
+            new QRCode(document.getElementById('al-qrcode'), { text: dni, width: 150, height: 150, colorDark: "#1a365d" });
+            
+            document.getElementById('al-qr-box').querySelector('span').innerHTML = 
+                "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
+                "<div class='text-lg font-black text-pink-700 uppercase'>¡Inscripción Exitosa!</div>";
+                
+            document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
+            document.getElementById('al-qr-clase-label').innerText = `Clase: ${clase} | Líder: ${lider}`;
+
+            // Guardamos con historial vacío al crearse
+            alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente", clase: clase, lider: lider, historial: [] });
+            guardarEnLocalStorage();
+        });
+
+        // DESCARGA QR
+        document.getElementById('btn-al-descargar').addEventListener('click', () => {
+            const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
+            if (qrCanvas) {
+                const nuevoCanvas = document.createElement('canvas');
+                nuevoCanvas.width = qrCanvas.width; nuevoCanvas.height = qrCanvas.height;
+                const ctx = nuevoCanvas.getContext('2d');
+                ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, nuevoCanvas.width, nuevoCanvas.height);
+                ctx.drawImage(qrCanvas, 0, 0);
+                const a = document.createElement('a');
+                a.download = `Credencial_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
+                a.href = nuevoCanvas.toDataURL('image/png', 1.0); a.click();
+            }
+        });
+
+        // RENDERIZADO TABLA ADMIN (Sencilla e intuitiva para no amontonar información)
+        function actualizarTablaFiltrada(claseFiltro) {
+            const tbody = document.getElementById('cuerpo-tabla');
+            tbody.innerHTML = "";
+            
+            let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
+
+            if (alumnosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium italic">No hay alumnos inscriptos.</td></tr>`;
+                return;
+            }
+
+            alumnosFiltrados.forEach((al) => {
+                const idxGlobal = alumnos.findIndex(a => a.dni === al.dni);
+                const tr = document.createElement('tr');
+                let colorFila = "hover:bg-slate-50";
+                let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
+                
+                if (al.faltas === 3) { colorFila = "bg-amber-50 border-l-4 border-amber-500"; badgeEstado += ` <span class="text-[9px] font-bold text-amber-700 font-black">LIMITE</span>`; }
+                else if (al.faltas >= 4) { colorFila = "bg-red-50 border-l-4 border-red-500 text-red-950"; badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600 text-white">🛑 LIBRE</span>`; }
+
+                tr.className = `border-b border-slate-100 ${colorFila}`;
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${al.apellido.toUpperCase()}, ${al.nombre}</td>
+                    <td class="p-3 text-slate-500 leading-tight font-medium text-[11px]">DNI: ${al.dni}<br><span class="text-pink-600 font-bold">Líder: ${al.lider || 'Ninguno'}</span></td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="restarFalta(${idxGlobal})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold px-1.5 py-0.5 rounded text-[10px]">-</button>
+                            <span class="font-extrabold text-sm min-w-[16px]">${al.faltas}</span>
+                            <button onclick="sumarFalta(${idxGlobal})" class="bg-slate-800 hover:bg-slate-900 text-white font-extrabold px-1.5 py-0.5 rounded text-[10px]">+</button>
+                        </div>
+                    </td>
+                    <td class="p-3">${badgeEstado}</td>
+                    <td class="p-3 no-export">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white text-slate-700 font-medium">
+                                <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
+                                <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
+                            </select>
+                            <button onclick="editarFaltasManual(${idxGlobal})" class="bg-blue-50 text-blue-600 px-2 py-1 rounded font-bold text-[10px]">⚙️</button>
+                            <button onclick="eliminarAlumno(${idxGlobal})" class="bg-red-50 text-red-600 px-2 py-1 rounded font-bold text-[10px]">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
+            alumnos[idxGlobal].estado = nuevoEstado;
+            if (nuevoEstado === "Presente") {
+                const ahora = new Date();
+                const fechaLegible = `${ahora.getDate().toString().padStart(2,'0')}/${(ahora.getMonth()+1).toString().padStart(2,'0')}/${ahora.getFullYear()} ${ahora.getHours().toString().padStart(2,'0')}:${ahora.getMinutes().toString().padStart(2,'0')}`;
+                if (!alumnos[idxGlobal].historial) alumnos[idxGlobal].historial = [];
+                alumnos[idxGlobal].historial.push(fechaLegible);
+            }
+            guardarEnLocalStorage();
+            actualizarTablaFiltrada(selectorClase.value);
+        }
+
+        // ESCÁNER DE ENTRADA CON AGREGADO DE MARCA DE TIEMPO AUTOMÁTICA
+        function inicializarEscaner() {
+            const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
+            scan.render((dniLeido) => {
+                if (escanerBloqueado) return;
+                let al = alumnos.find(a => a.dni === dniLeido.trim());
+                escanerBloqueado = true;
+                setTimeout(() => { escanerBloqueado = false; }, 3000);
+
+                if (al) {
+                    if (al.estado === "Presente") {
+                        emitirPitido('advertencia');
+                        flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia");
+                        return;
+                    }
+                    if (al.faltas >= 4) {
+                        emitirPitido('error');
+                        flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
+                        return; 
+                    }
+
+                    emitirPitido('exito');
+                    flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
+                    
+                    al.estado = "Presente";
+                    
+                    // Captura e inyección automática de Día y Hora del acceso
+                    const ahora = new Date();
+                    const fechaLegible = `${ahora.getDate().toString().padStart(2,'0')}/${(ahora.getMonth()+1).toString().padStart(2,'0')}/${ahora.getFullYear()} ${ahora.getHours().toString().padStart(2,'0')}:${ahora.getMinutes().toString().padStart(2,'0')}`;
+                    if(!al.historial) al.historial = [];
+                    al.historial.push(fechaLegible);
+
+                    guardarEnLocalStorage();
+                    actualizarTablaFiltrada(selectorClase.value);
+                } else {
+                    emitirPitido('error');
+                    flashearCartelGigante("DNI DESCONOCIDO", "error");
                 }
-            } catch (e) { console.log("Audio Bloqueado."); }
+            });
+        }
+
+        // ==========================================
+        // MOTOR DE PROCESAMIENTO Y FILTRADO DE REPORTES EXPORTABLES
+        // ==========================================
+        function obtenerAlumnosParaReporte() {
+            const tipo = document.getElementById('tipo-reporte-descarga').value;
+            const claseActiva = selectorClase.value;
+            let listado = [];
+            
+            const ahora = new Date();
+
+            if (tipo === 'clase') {
+                listado = alumnos.filter(a => a.clase === claseActiva);
+            } else if (tipo === 'semanal') {
+                // Filtra alumnos que hayan asistido en los últimos 7 días
+                listado = alumnos.filter(a => {
+                    if(!a.historial || a.historial.length === 0) return false;
+                    return a.historial.some(f => {
+                        const [fPart, hPart] = f.split(' ');
+                        const [d, m, y] = fPart.split('/');
+                        const fechaAsis = new Date(y, m - 1, d);
+                        const diferenciaDias = (ahora - fechaAsis) / (1000 * 60 * 60 * 24);
+                        return diferenciaDias <= 7;
+                    });
+                });
+            } else if (tipo === 'mensual') {
+                // Filtra alumnos que hayan asistido en los últimos 30 días
+                listado = alumnos.filter(a => {
+                    if(!a.historial || a.historial.length === 0) return false;
+                    return a.historial.some(f => {
+                        const [fPart, hPart] = f.split(' ');
+                        const [d, m, y] = fPart.split('/');
+                        const fechaAsis = new Date(y, m - 1, d);
+                        const diferenciaDias = (ahora - fechaAsis) / (1000 * 60 * 60 * 24);
+                        return diferenciaDias <= 30;
+                    });
+                });
+            } else if (tipo === 'final') {
+                // Muestra TODOS los alumnos evaluando si egresaron (Menos de 4 faltas) o no (Libres)
+                listado = alumnos;
+            }
+            return { listado, tipo, claseActiva };
+        }
+
+        // CONSTRUCTOR DINÁMICO DE LA PLANILLA INTERNA DE DESCARGAS (Incluye columnas extendidas solicitadas)
+        function construirHtmlReporte() {
+            const { listado, tipo, claseActiva } = obtenerAlumnosParaReporte();
+            let html = `<div style="padding: 20px; font-family: sans-serif; color: #1e293b;">
+                <h1 style="text-transform: uppercase; font-size: 20px; font-weight: bold; margin-bottom: 2px; color: #1a365d;">CCI ASISTENCIAS - INFORME OFICIAL</h1>`;
+            
+            if(tipo === 'clase') html += `<p style="font-size: 13px; margin-top:0;">Reporte específico del aula: <strong>${claseActiva}</strong></p>`;
+            else if(tipo === 'semanal') html += `<p style="font-size: 13px; margin-top:0;">Reporte de Asistencias Semanales (Últimos 7 días) - Filtro General Multiclase</p>`;
+            else if(tipo === 'mensual') html += `<p style="font-size: 13px; margin-top:0;">Reporte de Asistencias Mensuales (Últimos 30 días) - Filtro General Multiclase</p>`;
+            else if(tipo === 'final') html += `<p style="font-size: 13px; margin-top:0; font-weight: bold; color: #db2777;">🎓 BALANCE FINAL DE EGRESADOS (Condición académica de toda la matrícula)</p>`;
+
+            html += `<table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 15px;">
+                <thead>
+                    <tr style="background-color: #f1f5f9; text-align: left; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; color: #475569;">
+                        <th style="padding: 8px; border: 1px solid #cbd5e1;">Alumno</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1;">DNI</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1;">Clase</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1;">Persona que lo Invitó (Líder)</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Total Faltas</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1;">Historial de Asistencias (Días y Horas)</th>
+                        <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">¿EGRESÓ?</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            if(listado.length === 0) {
+                html += `<tr><td colspan="7" style="padding: 15px; text-align: center; color: #94a3b8; font-style: italic;">No se encontraron registros para este criterio.</td></tr>`;
+            } else {
+                listado.forEach(al => {
+                    const egresa = al.faltas >= 4 ? '<b style="color:#b91c1c;">🔴 NO (LIBRE)</b>' : '<b style="color:#047857;">🎓 SÍ (EGRESADO)</b>';
+                    const fechas = al.historial && al.historial.length > 0 ? al.historial.join('<br>') : '<span style="color:#94a3b8;">Sin ingresos</span>';
+                    
+                    html += `<tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${al.apellido.toUpperCase()}, ${al.nombre}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0;">${al.dni}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0;">${al.clase}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: 500; color: #db2777;">${al.lider || 'Ninguno'}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold;">${al.faltas}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0; line-height: 1.3;">${fechas}</td>
+                        <td style="padding: 8px; border: 1px solid #e2e8f0; text-align: center;">${egresa}</td>
+                    </tr>`;
+                });
+            }
+
+            html += `</tbody></table></div>`;
+            return { html, tipo, claseActiva };
+        }
+
+        // ACCIONES DE DESCARGA
+        function exportarExcelAvanzado() {
+            const { listado, tipo, claseActiva } = obtenerAlumnosParaReporte();
+            
+            // Mapeo limpio para convertir los datos complejos en columnas estructuradas de Excel
+            let matrizExcel = listado.map(al => ({
+                "ALUMNO": `${al.apellido.toUpperCase()}, ${al.nombre}`,
+                "DNI": al.dni,
+                "CLASE / NIVEL": al.clase,
+                "QUIEN LO LLEVÓ (LÍDER)": al.lider || "Ninguno",
+                "TOTAL FALTAS": al.faltas,
+                "HISTORIAL FECHAS Y HORARIOS": al.historial && al.historial.length > 0 ? al.historial.join(" | ") : "Sin asistencias",
+                "¿EGRESÓ?": al.faltas >= 4 ? "NO (LIBRE)" : "SÍ (EGRESADO)"
+            }));
+
+            const hoja = XLSX.utils.json_to_sheet(matrizExcel);
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, "Reporte CCI");
+            XLSX.writeFile(libro, `CCI_Reporte_${tipo.toUpperCase()}_${claseActiva.replace(/\s+/g, '_')}.xlsx`);
+        }
+
+        function exportarPDFAvanzado() {
+            const { html, tipo } = construirHtmlReporte();
+            const contenedorOculto = document.getElementById('tabla-exportacion-oculta');
+            contenedorOculto.innerHTML = html;
+            contenedorOculto.classList.remove('hidden');
+
+            const opciones = {
+                margin: 0.3,
+                filename: `CCI_Reporte_${tipo.toUpperCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' } // Landscape para dar espacio a los días y horarios
+            };
+
+            html2pdf().from(contenedorOculto).set(opciones).save().then(() => {
+                contenedorOculto.classList.add('hidden');
+                contenedorOculto.innerHTML = "";
+            });
         }
 
         function mostrarViñeta(mensaje, tipo = 'success') {
@@ -264,193 +543,8 @@
             if (tipo === 'exito') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-emerald-100 text-emerald-800 border-emerald-300 block animate-bounce"; }
             else if (tipo === 'advertencia') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-amber-100 text-amber-800 border-amber-300 block"; }
             else { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-red-100 text-red-800 border-red-300 block"; }
-            setTimeout(() => { cartel.classList.add('hidden'); }, 3000); // Sincronizado con los 3 segundos
+            setTimeout(() => { cartel.classList.add('hidden'); }, 3000);
         }
-
-        if (esAdmin) {
-            document.getElementById('vista-admin').classList.remove('hidden');
-            document.getElementById('vista-admin').classList.add('flex');
-            actualizarTablaFiltrada("Nivel 1"); 
-            inicializarEscaner();
-        } else {
-            document.getElementById('vista-alumno').classList.remove('hidden');
-            document.getElementById('vista-alumno').classList.add('flex');
-        }
-
-        document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
-            const clase = document.getElementById('al-clase').value;
-            const dni = document.getElementById('al-dni').value.trim();
-            const nombre = document.getElementById('al-nombre').value.trim();
-            const apellido = document.getElementById('al-apellido').value.trim();
-
-            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido", "error");
-            if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
-
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            document.getElementById('form-alumno').classList.add('hidden');
-            document.getElementById('al-qr-box').classList.remove('hidden');
-            document.getElementById('al-qr-box').classList.add('flex');
-            document.getElementById('al-qrcode').innerHTML = "";
-            
-            new QRCode(document.getElementById('al-qrcode'), { text: dni, width: 150, height: 150, colorDark: "#1a365d" });
-            
-            document.getElementById('al-qr-box').querySelector('span').innerHTML = 
-                "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
-                "<div class='text-lg font-black text-pink-700 uppercase'>¡Inscripción Exitosa!</div>" +
-                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Tus datos se guardaron localmente.</div>";
-                
-            document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
-            document.getElementById('al-qr-clase-label').innerText = `Inscripto en: ${clase}`;
-
-            alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente", clase: clase });
-            guardarEnLocalStorage();
-        });
-
-        document.getElementById('btn-al-descargar').addEventListener('click', () => {
-            const qrCanvas = document.getElementById('al-qrcode').querySelector('canvas');
-            if (qrCanvas) {
-                const nuevoCanvas = document.createElement('canvas');
-                nuevoCanvas.width = qrCanvas.width; nuevoCanvas.height = qrCanvas.height;
-                const ctx = nuevoCanvas.getContext('2d');
-                ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, nuevoCanvas.width, nuevoCanvas.height);
-                ctx.drawImage(qrCanvas, 0, 0);
-                const a = document.createElement('a');
-                a.download = `Credencial_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
-                a.href = nuevoCanvas.toDataURL('image/png', 1.0); a.click();
-            }
-        });
-
-        function actualizarTablaFiltrada(claseFiltro) {
-            const tbody = document.getElementById('cuerpo-tabla');
-            tbody.innerHTML = "";
-            
-            let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
-
-            alumnosFiltrados.sort((a, b) => {
-                const faltasA = parseInt(a.faltas) || 0;
-                const faltasB = parseInt(b.faltas) || 0;
-                if (faltasA !== faltasB) return faltasA - faltasB;
-                return a.apellido.localeCompare(b.apellido);
-            });
-
-            if (alumnosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium italic">No hay alumnos inscriptos en esta clase todavía.</td></tr>`;
-                return;
-            }
-
-            alumnosFiltrados.forEach((al) => {
-                const idxGlobal = alumnos.findIndex(a => a.dni === al.dni);
-
-                const tr = document.createElement('tr');
-                let colorFila = "hover:bg-slate-50";
-                let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
-                
-                if (al.faltas === 3) {
-                    colorFila = "bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500";
-                    badgeEstado += ` <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-600 text-white uppercase">Al límite</span>`;
-                } else if (al.faltas >= 4) {
-                    colorFila = "bg-red-50 hover:bg-red-100 border-l-4 border-red-500 text-red-950";
-                    badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-red-600 text-white animate-pulse">🛑 LIBRE</span>`;
-                }
-
-                tr.className = `border-b border-slate-100 ${colorFila}`;
-                tr.innerHTML = `
-                    <td class="p-3 font-semibold">${al.apellido.toUpperCase()}, ${al.nombre}</td>
-                    <td class="p-3 text-slate-500 font-mono">${al.dni}</td>
-                    <td class="p-3 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="restarFalta(${idxGlobal})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]">-</button>
-                            <span class="font-extrabold text-sm min-w-[16px]">${al.faltas}</span>
-                            <button onclick="sumarFalta(${idxGlobal})" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">+</button>
-                        </div>
-                    </td>
-                    <td class="p-3">${badgeEstado}</td>
-                    <td class="p-3 no-export">
-                        <div class="flex items-center justify-center gap-2">
-                            <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white text-slate-700">
-                                <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
-                                <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
-                            </select>
-                            <button onclick="editarFaltasManual(${idxGlobal})" title="Editar Número Exacto" class="bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded font-bold text-[10px]">⚙️ N°</button>
-                            <button onclick="eliminarAlumno(${idxGlobal})" title="Eliminar Alumno" class="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-2 py-1 rounded font-bold text-[10px]">🗑️</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
-            alumnos[idxGlobal].estado = nuevoEstado;
-            guardarEnLocalStorage();
-            mostrarViñeta("Estado actualizado", "success");
-            actualizarTablaFiltrada(selectorClase.value);
-        }
-
-        // INICIALIZACIÓN DEL LECTOR CON COOLDOWN DE 3 SEGUNDOS
-        function inicializarEscaner() {
-            const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
-            scan.render((dniLeido) => {
-                
-                // SI EL ESCÁNER ESTÁ BLOQUEADO EN LOS 3 SEGUNDOS DE ESPERA, IGNORAR LA LECTURA
-                if (escanerBloqueado) return;
-
-                let al = alumnos.find(a => a.dni === dniLeido.trim());
-
-                // EMPEZAR PROCESAMIENTO: SE ACTIVA EL BLOQUEO INMEDIATO
-                escanerBloqueado = true;
-
-                // PROGRAMAR LA REAPERTURA DEL ESCÁNER EN 3000 MILISEGUNDOS (3 SEGUNDOS)
-                setTimeout(() => {
-                    escanerBloqueado = false;
-                }, 3000);
-
-                if (al) {
-                    if (al.estado === "Presente") {
-                        emitirPitido('advertencia');
-                        mostrarViñeta(`${al.apellido} ya tiene el presente en la clase ${al.clase}.`, "warning");
-                        flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia");
-                        return;
-                    }
-
-                    if (al.faltas >= 4) {
-                        emitirPitido('error');
-                        mostrarViñeta(`Ingreso denegado: ${al.apellido} está LIBRE.`, "error");
-                        flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
-                        return; 
-                    }
-
-                    emitirPitido('exito');
-                    mostrarViñeta(`Presente Registrado en [${al.clase}] para ${al.apellido}`, "success");
-                    flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
-                    
-                    al.estado = "Presente";
-                    guardarEnLocalStorage();
-                    actualizarTablaFiltrada(selectorClase.value);
-                } else {
-                    emitirPitido('error');
-                    mostrarViñeta("DNI no registrado.", "error");
-                    flashearCartelGigante("DNI DESCONOCIDO", "error");
-                }
-            });
-        }
-
-        // REPORTES
-        document.getElementById('btn-excel').addEventListener('click', () => {
-            const claseActiva = selectorClase.value;
-            let filtrados = alumnos.filter(a => a.clase === claseActiva);
-            const s = XLSX.utils.json_to_sheet(filtrados);
-            const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, claseActiva);
-            XLSX.writeFile(b, `Asistencia_${claseActiva.replace(/\s+/g, '_')}.xlsx`);
-        });
-
-        document.getElementById('btn-pdf').addEventListener('click', () => {
-            const d = document.querySelectorAll('.no-export, .download-actions');
-            d.forEach(el => el.style.visibility = 'hidden');
-            html2pdf().from(document.getElementById('area-impresion-pdf')).save().then(() => {
-                d.forEach(el => el.style.visibility = 'visible');
-            });
-        });
     </script>
 </body>
 </html>
