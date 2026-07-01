@@ -36,15 +36,24 @@
     <div class="w-full max-w-5xl py-12 px-4 rounded-b-2xl shadow-lg border-b-4 border-pink-600 text-center relative overflow-hidden mb-6"
          style="background-image: linear-gradient(rgba(26, 54, 93, 0.85), rgba(26, 54, 93, 0.85)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSPFDgrwRHjbVD_Nl2JOmBWqz6hX457GV0IMJ6j2isnXOXOOO2EMhH0W0&s=10'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;">
         <h1 id="header-titulo" class="m-0 text-3xl md:text-4xl font-extrabold text-white uppercase tracking-wider drop-shadow-sm">CCI ASISTENCIAS</h1>
-        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control Multiclase (Prototipo)</p>
+        <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Registro - Control Multiclase Seleccionable</p>
     </div>
 
     <!-- VISTA ALUMNO (INSCRIPCIÓN Y GENERACIÓN DE QR) -->
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Inscripción a Clase</h2>
-        <p class="text-xs text-slate-400 mb-6">Ingresá tus datos para registrarte y generar tu credencial de acceso.</p>
+        <p class="text-xs text-slate-400 mb-6">Ingresá tus datos y seleccioná tu nivel para generar tu credencial de acceso.</p>
         
         <form id="form-alumno" class="space-y-4 text-left" onsubmit="return false;">
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-500 mb-1">¿A qué clase/escuela te vas a anotar?:</label>
+                <select id="al-clase" required class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none font-bold text-slate-700">
+                    <option value="ABC">ABC</option>
+                    <option value="Nivel 1" selected>Nivel 1</option>
+                    <option value="Nivel 2">Nivel 2</option>
+                    <option value="Nivel 3 y Escuela de Líderes">Nivel 3 y Escuela de Líderes</option>
+                </select>
+            </div>
             <div class="flex flex-col">
                 <label class="text-xs font-semibold text-slate-500 mb-1">DNI (Solo números):</label>
                 <input type="text" id="al-dni" required placeholder="Ej: 46123456" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-pink-500 focus:outline-none">
@@ -65,7 +74,8 @@
         <div id="al-qr-box" class="hidden mt-6 p-5 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50/30 flex-col items-center">
             <span></span>
             <div id="al-qrcode" class="mx-auto p-3 bg-white rounded-xl shadow-md"></div>
-            <span id="al-qr-label" class="text-xs font-bold text-slate-700 mt-3 mb-4 bg-white px-2 py-1 rounded border"></span>
+            <span id="al-qr-label" class="text-xs font-bold text-slate-700 mt-3 mb-1 bg-white px-2 py-1 rounded border"></span>
+            <span id="al-qr-clase-label" class="text-[11px] font-extrabold text-pink-600 uppercase mb-4 tracking-wide"></span>
             <button type="button" id="btn-al-descargar" class="bg-slate-800 text-white text-xs font-bold py-2 px-4 rounded-lg">📥 Guardar en el Celular</button>
         </div>
     </div>
@@ -76,7 +86,7 @@
         <!-- SELECTOR DINÁMICO DE CLASES -->
         <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <div class="text-left">
-                <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-1">Clase o Nivel Activo:</label>
+                <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Clase / Ver Aula:</label>
                 <select id="selector-clase" class="p-3 bg-slate-50 border border-pink-500 rounded-xl font-bold text-slate-800 text-sm focus:outline-none min-w-[280px] shadow-sm">
                     <option value="ABC">Clase: ABC</option>
                     <option value="Nivel 1" selected>Clase: Nivel 1</option>
@@ -85,7 +95,7 @@
                 </select>
             </div>
             <div id="status" class="bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
-                ⚠️ MODO PRUEBA LOCAL (Sin conexión a Google)
+                ⚠️ PROTOTIPO: MOSTRANDO LISTAS SEPARADAS POR CLASE
             </div>
         </div>
 
@@ -100,21 +110,19 @@
                 </div>
 
                 <div class="mt-4 text-center text-[11px] text-slate-400 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Horarios Habilitados (Simulados):</strong>
-                    Viernes: 19:00 a 22:30 <br>
-                    Domingos: 09:30 a 12:00 y 17:00 a 22:30 
+                    <strong class="text-slate-600 block mb-1 uppercase tracking-wide text-[10px]">Nota de Simulación:</strong>
+                    El escáner detectará automáticamente a qué clase pertenece el alumno al leer su código.
                 </div>
             </div>
 
-            <!-- PANEL DE LA PLANILLA -->
+            <!-- PANEL DE LA PLANILLA FILTRADA -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
                     <h2 id="titulo-planilla" class="text-lg font-bold text-slate-800 mb-1">Planilla en Tiempo Real (Nivel 1)</h2>
                     
                     <div class="flex flex-wrap gap-2 my-4 download-actions">
-                        <button class="bg-[#1f7244] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-excel">🟢 Todo (Excel)</button>
+                        <button class="bg-[#1f7244] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-excel">🟢 Descargar Esta Clase (Excel)</button>
                         <button class="bg-[#c0392b] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-pdf">🔴 Reporte PDF</button>
-                        <button class="bg-[#8e44ad] text-white font-bold py-2 px-3 rounded-lg text-xs" id="btn-faltas">📊 Separar por Faltas (Excel)</button>
                     </div>
 
                     <div class="overflow-x-auto rounded-xl border border-slate-100">
@@ -137,61 +145,57 @@
     </div>
 
     <script>
-        // BASE DE DATOS LOCAL AUTOMÁTICA PARA EL MODO PRUEBA
+        // BASE DE DATOS LOCAL DISTRIBUIDA (Cada alumno tiene su propiedad "clase")
         let alumnos = [
-            { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 0, estado: "Ausente" },
-            { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 1, estado: "Ausente" },
-            { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente" },
-            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente" }, // Alumno Libre
-            { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente" }
+            // Alumnos de la Escuela ABC
+            { dni: "10101010", nombre: "Marcos", apellido: "Acuña", faltas: 0, estado: "Ausente", clase: "ABC" },
+            { dni: "11111111", nombre: "Juan", apellido: "Pérez", faltas: 1, estado: "Ausente", clase: "ABC" },
+            
+            // Alumnos de Nivel 1
+            { dni: "22222222", nombre: "María", apellido: "Gómez", faltas: 0, estado: "Ausente", clase: "Nivel 1" },
+            { dni: "33333333", nombre: "Carlos", apellido: "Rodríguez", faltas: 3, estado: "Ausente", clase: "Nivel 1" },
+            { dni: "44444444", nombre: "Lucas", apellido: "Benítez", faltas: 4, estado: "Ausente", clase: "Nivel 1" }, // Libre
+            
+            // Alumnos de Nivel 2
+            { dni: "55555555", nombre: "Ana", apellido: "Martínez", faltas: 2, estado: "Ausente", clase: "Nivel 2" },
+            { dni: "66666666", nombre: "Diego", apellido: "Milito", faltas: 0, estado: "Ausente", clase: "Nivel 2" },
+            
+            // Alumnos de Nivel 3 y Escuela de Líderes
+            { dni: "77777777", nombre: "Esteban", apellido: "Cambiaso", faltas: 1, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" },
+            { dni: "88888888", nombre: "Florencia", apellido: "Bertotti", faltas: 5, estado: "Ausente", clase: "Nivel 3 y Escuela de Líderes" }
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
         const esAdmin = urlParams.get('admin') === 'true';
         const selectorClase = document.getElementById('selector-clase');
 
-        // Manejo dinámico del título según la clase elegida
+        // Escucha el cambio de clase arriba y actualiza la tabla mostrando SOLAMENTE esa clase
         if (selectorClase) {
             selectorClase.addEventListener('change', (e) => {
                 const claseElegida = e.target.value;
                 document.getElementById('titulo-planilla').innerText = `Planilla en Tiempo Real (${claseElegida})`;
-                mostrarViñeta(`Cargada simulación para: ${claseElegida}`, "success");
+                actualizarTablaFiltrada(claseElegida);
             });
         }
 
-        // Sistema de pitidos (Beeps)
+        // Sistema de pitidos
         function emitirPitido(tipo = 'exito') {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-                
                 if (tipo === 'exito') {
                     oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.15);
                 } else if (tipo === 'advertencia') {
                     oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
-                    setTimeout(() => {
-                        const osc2 = audioCtx.createOscillator(); const gain2 = audioCtx.createGain();
-                        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-                        osc2.frequency.setValueAtTime(600, audioCtx.currentTime); gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                        osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
-                    }, 150);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
                 } else if (tipo === 'error') {
                     oscillator.type = 'sawtooth'; oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); 
-                    gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                    oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.35);
+                    gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.35);
                 }
             } catch (e) { console.log("Audio Bloqueado."); }
-        }
-
-        // Control de horarios estricto (Desactivado para pruebas rápidas, retorna siempre true)
-        function verificarHorarioValido() {
-            return true; 
         }
 
         function mostrarViñeta(mensaje, tipo = 'success') {
@@ -207,36 +211,31 @@
             const cartel = document.getElementById('cartel-gigante');
             const txt = document.getElementById('cartel-texto-grande');
             cartel.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-300', 'bg-red-100', 'text-red-800', 'border-red-300', 'bg-amber-100', 'text-amber-800', 'border-amber-300');
-            
             txt.innerText = texto;
-            if (tipo === 'exito') {
-                cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-emerald-100 text-emerald-800 border-emerald-300 block animate-bounce";
-            } else if (tipo === 'advertencia') {
-                cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-amber-100 text-amber-800 border-amber-300 block";
-            } else {
-                cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-red-100 text-red-800 border-red-300 block";
-            }
+            if (tipo === 'exito') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-emerald-100 text-emerald-800 border-emerald-300 block animate-bounce"; }
+            else if (tipo === 'advertencia') { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-amber-100 text-amber-800 border-amber-300 block"; }
+            else { cartel.className = "mt-4 p-4 rounded-xl text-center font-extrabold uppercase transition-all border duration-300 bg-red-100 text-red-800 border-red-300 block"; }
             setTimeout(() => { cartel.classList.add('hidden'); }, 3500);
         }
 
-        // Enrutador de Vistas
         if (esAdmin) {
             document.getElementById('vista-admin').classList.remove('hidden');
             document.getElementById('vista-admin').classList.add('flex');
-            actualizarTabla();
+            actualizarTablaFiltrada("Nivel 1"); // Por defecto arranca mostrando Nivel 1
             inicializarEscaner();
         } else {
             document.getElementById('vista-alumno').classList.remove('hidden');
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // SIMULACIÓN DE REGISTRO LOCAL DE ALUMNOS
+        // ACCIÓN REGISTRO DE ALUMNO CON ASIGNACIÓN DE CLASE
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
+            const clase = document.getElementById('al-clase').value;
             const dni = document.getElementById('al-dni').value.trim();
             const nombre = document.getElementById('al-nombre').value.trim();
             const apellido = document.getElementById('al-apellido').value.trim();
 
-            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido (Solo números de 7 u 8 dígitos)", "error");
+            if(!/^[0-9]{7,8}$/.test(dni)) return mostrarViñeta("DNI Inválido", "error");
             if(!nombre || !apellido) return mostrarViñeta("Faltan datos", "error");
 
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -249,13 +248,14 @@
             
             document.getElementById('al-qr-box').querySelector('span').innerHTML = 
                 "<div class='animate-bounce text-2xl mb-2'>🎉</div>" +
-                "<div class='text-lg font-black text-pink-700 uppercase'>¡Registro Exitoso Simulado!</div>" +
-                "<div class='text-xs text-slate-500 mb-4 font-normal lowercase tracking-wide'>Tu DNI se agregó a la lista local para pruebas.</div>";
+                "<div class='text-lg font-black text-pink-700 uppercase'>¡Inscripción Exitosa!</div>" +
+                "<div class='text-xs text-slate-500 mb-2 font-normal lowercase tracking-wide'>Te has registrado correctamente.</div>";
                 
             document.getElementById('al-qr-label').innerText = `${apellido.toUpperCase()}, ${nombre}`;
+            document.getElementById('al-qr-clase-label').innerText = `Inscripto en: ${clase}`;
 
-            // Lo agregamos a la lista local para poder escanearlo después
-            alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente" });
+            // Guardamos el nuevo alumno con la clase exacta seleccionada
+            alumnos.push({ dni, nombre, apellido, faltas: 0, estado: "Ausente", clase: clase });
         });
 
         // DESCARGAR QR
@@ -268,25 +268,36 @@
                 ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, nuevoCanvas.width, nuevoCanvas.height);
                 ctx.drawImage(qrCanvas, 0, 0);
                 const a = document.createElement('a');
-                a.download = `Credencial_SIMULADA_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
-                a.href = nuevoCanvas.toDataURL('image/png', 1.0);
-                a.click();
+                a.download = `Credencial_${document.getElementById('al-qr-label').innerText.replace(/\s+/g, '_')}.png`;
+                a.href = nuevoCanvas.toDataURL('image/png', 1.0); a.click();
             }
         });
 
-        // ACTUALIZAR TABLA DE FORMA LOCAL
-        function actualizarTabla() {
+        // FUNCIÓN CLAVE: ACTUALIZA LA TABLA FILTRANDO EXCLUSIVAMENTE POR LA CLASE ACTIVA
+        function actualizarTablaFiltrada(claseFiltro) {
             const tbody = document.getElementById('cuerpo-tabla');
             tbody.innerHTML = "";
             
-            alumnos.sort((a, b) => {
+            // Filtramos la lista global para quedarnos solo con los de la clase actual
+            let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
+
+            // Ordenamos la lista filtrada (Primero faltas, luego apellido)
+            alumnosFiltrados.sort((a, b) => {
                 const faltasA = parseInt(a.faltas) || 0;
                 const faltasB = parseInt(b.faltas) || 0;
                 if (faltasA !== faltasB) return faltasA - faltasB;
                 return a.apellido.localeCompare(b.apellido);
             });
 
-            alumnos.forEach((al, idx) => {
+            if (alumnosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium italic">No hay alumnos inscriptos en esta clase todavía.</td></tr>`;
+                return;
+            }
+
+            alumnosFiltrados.forEach((al) => {
+                // Buscamos el índice real en el array global para cuando modifiquemos el estado manual
+                const idxGlobal = alumnos.findIndex(a => a.dni === al.dni);
+
                 const tr = document.createElement('tr');
                 let colorFila = "hover:bg-slate-50";
                 let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
@@ -306,7 +317,7 @@
                     <td class="p-3 text-center font-extrabold text-sm">${al.faltas}</td>
                     <td class="p-3">${badgeEstado}</td>
                     <td class="p-3 no-export">
-                        <select onchange="modificarDesdeAdmin(${idx}, this.value)" class="p-1 border rounded text-xs bg-white">
+                        <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white">
                             <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
                             <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
                         </select>
@@ -316,56 +327,58 @@
             });
         }
 
-        // CAMBIAR ESTADO MANUAL EN LA TABLA SIMULADA
-        function modificarDesdeAdmin(idx, nuevoEstado) {
-            alumnos[idx].estado = nuevoEstado;
-            mostrarViñeta("Cambiado localmente (Simulación)", "success");
-            actualizarTabla();
+        function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
+            alumnos[idxGlobal].estado = nuevoEstado;
+            mostrarViñeta("Estado actualizado", "success");
+            actualizarTablaFiltrada(selectorClase.value);
         }
 
-        // ESCÁNER DE ASISTENCIA LOCAL (SIMULADO)
+        // ESCÁNER INTELIGENTE: Detecta el alumno y sabe a qué clase pertenece
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render((dniLeido) => {
                 
                 let al = alumnos.find(a => a.dni === dniLeido.trim());
-                const claseActiva = document.getElementById('selector-clase').value;
 
                 if (al) {
+                    // El escáner le da el presente en la clase a la que pertenece originalmente el alumno
                     if (al.estado === "Presente") {
                         emitirPitido('advertencia');
-                        mostrarViñeta(`${al.apellido} ya tiene el presente en ${claseActiva}.`, "warning");
+                        mostrarViñeta(`${al.apellido} ya tiene el presente en la clase ${al.clase}.`, "warning");
                         flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia");
                         return;
                     }
 
                     if (al.faltas >= 4) {
                         emitirPitido('error');
-                        mostrarViñeta("Ingreso denegado: Alumno LIBRE.", "error");
+                        mostrarViñeta(`Ingreso denegado: ${al.apellido} está LIBRE.`, "error");
                         flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error");
                         return; 
                     }
 
                     emitirPitido('exito');
-                    mostrarViñeta(`[${claseActiva}] Presente: ${al.apellido}, ${al.nombre}`, "success");
-                    flashearCartelGigante(`✅ ${al.apellido} - ${claseActiva}`, "exito");
+                    mostrarViñeta(`Presente Registrado en [${al.clase}] para ${al.apellido}`, "success");
+                    flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
                     
-                    // Modificación local en memoria
                     al.estado = "Presente";
-                    actualizarTabla();
+                    
+                    // Refresca la tabla para reflejar el cambio si justo estamos viendo la clase de ese alumno
+                    actualizarTablaFiltrada(selectorClase.value);
                 } else {
                     emitirPitido('error');
-                    mostrarViñeta("DNI no registrado en el sistema local.", "error");
+                    mostrarViñeta("DNI no registrado.", "error");
                     flashearCartelGigante("DNI DESCONOCIDO", "error");
                 }
             });
         }
 
-        // DESCARGAS DE REPORTES SIMULADOS
+        // REPORTES EXCLUSIVOS DE LA CLASE EN PANTALLA
         document.getElementById('btn-excel').addEventListener('click', () => {
-            const s = XLSX.utils.json_to_sheet(alumnos);
-            const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, "Simulación");
-            XLSX.writeFile(b, `Asistencia_Simulada_${selectorClase.value.replace(/\s+/g, '_')}.xlsx`);
+            const claseActiva = selectorClase.value;
+            let filtrados = alumnos.filter(a => a.clase === claseActiva);
+            const s = XLSX.utils.json_to_sheet(filtrados);
+            const b = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(b, s, claseActiva);
+            XLSX.writeFile(b, `Asistencia_${claseActiva.replace(/\s+/g, '_')}.xlsx`);
         });
 
         document.getElementById('btn-pdf').addEventListener('click', () => {
@@ -374,15 +387,6 @@
             html2pdf().from(document.getElementById('area-impresion-pdf')).save().then(() => {
                 d.forEach(el => el.style.visibility = 'visible');
             });
-        });
-
-        document.getElementById('btn-faltas').addEventListener('click', () => {
-            const regulares = alumnos.filter(a => a.faltas < 4);
-            const libres = alumnos.filter(a => a.faltas >= 4);
-            const wb = XLSX.utils.book_new();
-            if (regulares.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(regulares), "Regulares");
-            if (libres.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(libres), "Libres");
-            XLSX.writeFile(wb, `Reporte_Simulado_Faltas.xlsx`);
         });
     </script>
 </body>
