@@ -39,7 +39,6 @@
         <p class="m-0 mt-2 text-slate-200 text-sm md:text-base font-medium opacity-90">Gestión por Clases, Líderes y Protección de Historial</p>
     </div>
 
-    <!-- VISTA ALUMNO -->
     <div id="vista-alumno" class="hidden w-[95%] max-w-md bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col text-center">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Inscripción a Clase</h2>
         <p class="text-xs text-slate-400 mb-6">Ingresá tus datos para verificar tu nivel y generar tu credencial QR.</p>
@@ -80,12 +79,10 @@
         </div>
     </div>
 
-    <!-- VISTA ADMINISTRADOR -->
     <div id="vista-admin" class="hidden w-[95%] max-w-5xl flex-col items-center">
         
-        <!-- PANEL SUPERIOR: FILTRO DE AULA Y CIERRE DE CICLO SEGURO -->
-        <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <div class="text-left w-full sm:w-auto">
+        <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+            <div class="text-left w-full lg:w-auto">
                 <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Clase / Ver Aula:</label>
                 <select id="selector-clase" class="p-3 bg-slate-50 border border-pink-500 rounded-xl font-bold text-slate-800 text-sm focus:outline-none min-w-[280px] shadow-sm w-full">
                     <option value="ABC">Clase: ABC</option>
@@ -94,17 +91,19 @@
                     <option value="Nivel 3 y Escuela de Líderes">Clase: Nivel 3 y Escuela de Líderes</option>
                 </select>
             </div>
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-                <button onclick="finalizarCicloAcademico()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-4 py-3 rounded-xl uppercase tracking-wide transition-all shadow-sm">
-                    🔄 Finalizar Ciclo Actual (Limpiar para nueva clase)
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+                <button onclick="limpiarAsistenciaDelDia()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-extrabold px-4 py-3 rounded-xl uppercase tracking-wide transition-all shadow-sm">
+                    📅 Nueva Clase (Limpiar Presentes)
                 </button>
-                <div id="status" class="bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center">
-                    💾 HISTORIAL PROTEGIDO
+                <button onclick="finalizarCicloDeEstaClase()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-4 py-3 rounded-xl uppercase tracking-wide transition-all shadow-sm">
+                    🎓 Cerrar Ciclo de esta Clase
+                </button>
+                <div id="status" class="bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wide text-center w-full sm:w-auto">
+                    🛡️ CONTROL FILTRADO
                 </div>
             </div>
         </div>
 
-        <!-- SECCIÓN DE DESCARGAS MULTIRREPORTE -->
         <div class="w-full bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <div class="text-left">
                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">📊 Reportes por Clase y Líderes Responsables</h3>
@@ -123,7 +122,6 @@
         </div>
 
         <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <!-- PANEL DEL ESCÁNER -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:col-span-1">
                 <h2 class="text-lg font-bold text-slate-800 border-b pb-2 mb-2">📸 Escáner de Entrada</h2>
                 <div id="reader" class="w-full max-w-[260px] mx-auto rounded-xl overflow-hidden shadow-inner !border-0"></div>
@@ -133,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- PANEL DE LA PLANILLA EN VIVO -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden md:col-span-2 flex flex-col">
                 <div id="area-impresion-pdf" class="w-full bg-white">
                     <h2 id="titulo-planilla" class="text-lg font-bold text-slate-800 mb-4">Planilla en Tiempo Real (Nivel 1)</h2>
@@ -142,11 +139,10 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-600">
-                                    <th class="p-3">Alumno</th>
+                                    <th class="p-3">Alumno / Calificación</th>
                                     <th class="p-3">Líder / Referente</th>
-                                    <th class="p-3 text-center w-24">Faltas</th>
+                                    <th class="p-3 text-center w-28">Faltas Acumuladas</th>
                                     <th class="p-3">Estado Aula</th>
-                                    <th class="p-3 text-center no-export">Controles</th>
                                 </tr>
                             </thead>
                             <tbody id="cuerpo-tabla" class="divide-y divide-slate-100"></tbody>
@@ -157,12 +153,9 @@
         </div>
     </div>
 
-    <!-- REPORTE OCULTO PARA CONSTRUIR EXPORTACIONES -->
     <div id="tabla-exportacion-oculta" class="hidden"></div>
 
     <script>
-        // CARGA SEGURA: Si no existe la base de datos, se crea un array limpio.
-        // Cada alumno tiene ahora una mochila interna: "nivelesAprobados": []
         if (!localStorage.getItem('cci_alumnos')) {
             localStorage.setItem('cci_alumnos', JSON.stringify([]));
         }
@@ -192,10 +185,6 @@
             actualizarTablaFiltrada(selectorClase.value);
         }
 
-        function tratarAusentesAutomaticos() {
-            // El sistema marca ausentes por defecto al cambiar la fecha, etc.
-        }
-
         function restarFalta(idxGlobal) {
             if (alumnos[idxGlobal].faltas > 0) {
                 alumnos[idxGlobal].faltas -= 1;
@@ -222,47 +211,170 @@
             }
         }
 
+        function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
+            alumnos[idxGlobal].estado = nuevoEstado;
+            if (nuevoEstado === "Presente") {
+                const ahora = new Date();
+                const fechaLegible = `${ahora.getDate().toString().padStart(2,'0')}/${(ahora.getMonth()+1).toString().padStart(2,'0')}/${ahora.getFullYear()} ${ahora.getHours().toString().padStart(2,'0')}:${ahora.getMinutes().toString().padStart(2,'0')}`;
+                if (!alumnos[idxGlobal].historial) alumnos[idxGlobal].historial = [];
+                alumnos[idxGlobal].historial.push(fechaLegible);
+            }
+            guardarEnLocalStorage();
+            actualizarTablaFiltrada(selectorClase.value);
+        }
+
         // ==========================================
-        // REINICIO SEGURO: CIERRE DE CICLO ACADÉMICO (SIN BORRAR EL LOCALSTORAGE)
+        // ACCIÓN 1: LIMPIAR ASISTENCIA DEL DIA (SOLO LA CLASE SELECCIONADA)
         // ==========================================
-        function finalizarCicloAcademico() {
-            if (!confirm("⚠ ¿Querés cerrar el ciclo actual? Los alumnos que tengan MENOS de 4 faltas quedarán guardados permanentemente como graduados de su nivel actual. Sus faltas se resetearán a 0 y quedarán listos para avanzar de escuela.")) {
+        function limpiarAsistenciaDelDia() {
+            const claseActiva = selectorClase.value;
+            if (!confirm(`¿Querés poner a todos los alumnos de '${claseActiva}' en Ausente para la próxima clase? (Las faltas acumuladas NO se tocarán).`)) {
+                return;
+            }
+            alumnos.forEach(al => {
+                if (al.clase === claseActiva) {
+                    al.estado = "Ausente";
+                }
+            });
+            guardarEnLocalStorage();
+            actualizarTablaFiltrada(claseActiva);
+            alert(`📅 Aula de '${claseActiva}' reiniciada. Todos vuelven a estar Ausentes.`);
+        }
+
+        // ==========================================
+        // ACCIÓN 2: CIERRE DE CICLO EXCLUSIVO CON LÓGICA DE FALTAS DIFERENCIADA
+        // ==========================================
+        function finalizarCicloDeEstaClase() {
+            const claseActiva = selectorClase.value;
+            if (!confirm(`⚠ ATENCIÓN: Vas a finalizar el ciclo de '${claseActiva}'.\n\nSolo egresarán quienes cumplan la asistencia requerida y tengan nota de examen aprobada (7 o más).\nSe limpiará la planilla para la próxima temporada.`)) {
                 return;
             }
 
-            alumnos.forEach(al => {
-                // Si el alumno no tiene su mochila de aprobados, se la creamos
-                if (!al.nivelesAprobados) al.nivelesAprobados = [];
+            const esNivelAvanzado = (claseActiva === "Nivel 3 y Escuela de Líderes");
+            const faltasMaximasPermitidas = esNivelAvanzado ? 1 : 3;
 
-                // Si aprobó (menos de 4 faltas), guardamos su nivel en su mochila de logros
-                if (al.faltas < 4) {
-                    if (!al.nivelesAprobados.includes(al.clase)) {
-                        al.nivelesAprobados.push(al.clase);
+            alumnos.forEach(al => {
+                if (al.clase === claseActiva) {
+                    if (!al.nivelesAprobados) al.nivelesAprobados = [];
+                    const tieneNotaAprobada = al.nota !== "" && parseFloat(al.nota) >= 7;
+                    
+                    if (al.faltas <= faltasMaximasPermitidas && tieneNotaAprobada) {
+                        if (!al.nivelesAprobados.includes(claseActiva)) {
+                            al.nivelesAprobados.push(claseActiva);
+                        }
                     }
+                    al.faltas = 0;
+                    al.nota = "";
+                    al.estado = "Ausente";
+                    al.historial = [];
                 }
-                
-                // Limpieza de parámetros para la nueva cursada del ciclo entrante
-                al.faltas = 0;
-                al.estado = "Ausente";
-                al.historial = []; // Se reinician los días/horas del nuevo mes
             });
 
             guardarEnLocalStorage();
-            actualizarTablaFiltrada(selectorClase.value);
-            alert("🎉 ¡Ciclo procesado con éxito! Las faltas y asistencias en vivo se limpiaron a 0, pero el historial de graduados está perfectamente a salvo en la memoria.");
+            actualizarTablaFiltrada(claseActiva);
+            alert(`🎓 Ciclo cerrado para '${claseActiva}'. Base de datos histórica actualizada.`);
+        }
+
+        // ==========================================
+        // RENDERS DE PLANILLA EN TIEMPO REAL
+        // ==========================================
+        function actualizarTablaFiltrada(claseFiltro) {
+            const tbody = document.getElementById('cuerpo-tabla');
+            tbody.innerHTML = "";
+            
+            let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
+
+            if (alumnosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium italic">No hay alumnos cursando esta clase actualmente.</td></tr>`;
+                return;
+            }
+
+            const esNivelAvanzado = (claseFiltro === "Nivel 3 y Escuela de Líderes");
+            const maxFaltasPermitidas = esNivelAvanzado ? 1 : 3;
+            const faltasParaQuedarLibre = esNivelAvanzado ? 2 : 4;
+
+            alumnosFiltrados.forEach((al) => {
+                const idxGlobal = alumnos.findIndex(a => a.nombre === al.nombre && a.apellido === al.apellido);
+                const tr = document.createElement('tr');
+                let colorFila = "hover:bg-slate-50";
+                
+                if (al.nota === undefined) al.nota = "";
+
+                let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
+                
+                if (al.faltas >= faltasParaQuedarLibre) { 
+                    colorFila = "bg-red-50 border-l-4 border-red-500 text-red-950"; 
+                    badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600 text-white">🛑 LIBRE</span>`; 
+                } else if (al.faltas === maxFaltasPermitidas) { 
+                    colorFila = "bg-amber-50 border-l-4 border-amber-500"; 
+                    badgeEstado += ` <span class="text-[9px] font-bold text-amber-700">AL LÍMITE</span>`; 
+                } else if (al.nota !== "" && parseFloat(al.nota) < 7) {
+                    colorFila = "bg-orange-50 border-l-4 border-orange-400";
+                    badgeEstado += ` <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-orange-500 text-white">📉 REPROBADO</span>`;
+                }
+
+                tr.className = `border-b border-slate-100 ${colorFila}`;
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-800 flex items-center gap-2">
+                            ${al.apellido.toUpperCase()}, ${al.nombre}
+                            <button onclick="eliminarAlumno(${idxGlobal})" title="Eliminar alumno" class="text-slate-300 hover:text-red-600 text-[11px] transition-colors">🗑️</button>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-normal mt-0.5 flex items-center gap-1.5">
+                            Nota Examen: <span class="font-bold text-slate-700">${al.nota || 'Sin evaluar'}</span>
+                            <button onclick="cargarNotaExamen(${idxGlobal})" class="text-pink-600 hover:underline text-[9px] font-bold">[📝 Asignar Nota]</button>
+                        </div>
+                    </td>
+                    <td class="p-3 text-slate-600 font-medium text-[12px]">${al.lider || 'Ninguno'}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="restarFalta(${idxGlobal})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-black w-6 h-6 rounded-lg text-xs flex items-center justify-center shadow-sm transition-all">-</button>
+                            <span class="font-black text-sm min-w-[20px] text-slate-800">${al.faltas}</span>
+                            <button onclick="sumarFalta(${idxGlobal})" class="bg-slate-800 hover:bg-slate-900 text-white font-black w-6 h-6 rounded-lg text-xs flex items-center justify-center shadow-sm transition-all">+</button>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            ${badgeEstado}
+                            <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-[11px] bg-white text-slate-700 focus:outline-none">
+                                <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
+                                <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
+                            </select>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cargarNotaExamen(idxGlobal) {
+            let notaActual = alumnos[idxGlobal].nota || "";
+            let nuevaNota = prompt(`Ingrese la nota del examen final para ${alumnos[idxGlobal].apellido} (1 al 10):`, notaActual);
+            if (nuevaNota !== null) {
+                if (nuevaNota.trim() === "") { alumnos[idxGlobal].nota = ""; }
+                else if (!isNaN(nuevaNota) && parseFloat(nuevaNota) >= 0 && parseFloat(nuevaNota) <= 10) {
+                    alumnos[idxGlobal].nota = parseFloat(nuevaNota);
+                } else {
+                    alert("Ingrese un número válido entre 0 y 10."); return;
+                }
+                guardarEnLocalStorage();
+                actualizarTablaFiltrada(selectorClase.value);
+            }
         }
 
         if (esAdmin) {
             document.getElementById('vista-admin').classList.remove('hidden');
             document.getElementById('vista-admin').classList.add('flex');
             actualizarTablaFiltrada("Nivel 1"); 
-            inicializarEscaner();
+            setTimeout(inicializarEscaner, 500);
         } else {
             document.getElementById('vista-alumno').classList.remove('hidden');
             document.getElementById('vista-alumno').classList.add('flex');
         }
 
-        // INSCRIPCIÓN INTELIGENTE CON MEMORIA HISTÓRICA DE LOGROS
+        // ==========================================
+        // REGISTRO DE ALUMNOS E INSCRIPCIÓN FILTRADA
+        // ==========================================
         document.getElementById('btn-alumno-registrar').addEventListener('click', () => {
             const clase = document.getElementById('al-clase').value;
             const nombre = document.getElementById('al-nombre').value.trim();
@@ -273,21 +385,16 @@
             if(!lider) lider = "Ninguno";
 
             const qrID = `${apellido.toLowerCase()}_${nombre.toLowerCase()}`.replace(/\s+/g, '');
-
-            // Buscamos si la persona ya existe de ciclos anteriores
             let alumnoExistente = alumnos.find(a => `${a.apellido.toLowerCase()}_${a.nombre.toLowerCase()}`.replace(/\s+/g, '') === qrID);
 
-            // Si es completamente nuevo en la iglesia e intenta ingresar directo a un nivel avanzado, lo rebotamos
             if (!alumnoExistente && clase !== "ABC") {
                 return alert(`🛑 CONTROL DE ACCESO: Como eres un alumno nuevo en el sistema, debes comenzar registrándote en la clase 'ABC'.`);
             }
 
-            // Si ya existe, evaluamos sus correlatividades leyendo su mochila "nivelesAprobados"
             if (alumnoExistente) {
                 const aprobados = alumnoExistente.nivelesAprobados || [];
-
                 if (clase === "Nivel 1" && !aprobados.includes("ABC")) {
-                    return alert(`🛑 REQUISITO BLOQUEADO: No podés cursar Nivel 1 porque no registrás la aprobación de 'ABC' en el ciclo anterior.`);
+                    return alert(`🛑 REQUISITO BLOQUEADO: No podés cursar Nivel 1 porque no registrás la aprobación de 'ABC'.`);
                 }
                 if (clase === "Nivel 2" && !aprobados.includes("Nivel 1")) {
                     return alert(`🛑 REQUISITO BLOQUEADO: Para ingresar a Nivel 2 es obligatorio haber aprobado el 'Nivel 1'.`);
@@ -295,21 +402,18 @@
                 if (clase === "Nivel 3 y Escuela de Líderes" && !aprobados.includes("Nivel 2")) {
                     return alert(`🛑 REQUISITO BLOQUEADO: Debés haber aprobado el 'Nivel 2' para inscribirte en la Escuela de Líderes.`);
                 }
-
-                // Si pasó los controles, actualizamos su clase para el nuevo período
                 alumnoExistente.clase = clase;
                 alumnoExistente.lider = lider;
                 alumnoExistente.faltas = 0;
+                alumnoExistente.nota = "";
                 alumnoExistente.estado = "Ausente";
                 alumnoExistente.historial = [];
             } else {
-                // Si es nuevo y eligió ABC, lo agregamos normalmente
-                alumnos.push({ nombre, apellido, faltas: 0, estado: "Ausente", clase: clase, lider: lider, historial: [], nivelesAprobados: [] });
+                alumnos.push({ nombre, apellido, faltas: 0, nota: "", estado: "Ausente", clase: clase, lider: lider, historial: [], nivelesAprobados: [] });
             }
 
             guardarEnLocalStorage();
 
-            // Renderizar interfaz de éxito
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             document.getElementById('form-alumno').classList.add('hidden');
             document.getElementById('al-qr-box').classList.remove('hidden');
@@ -335,65 +439,6 @@
             }
         });
 
-        function actualizarTablaFiltrada(claseFiltro) {
-            const tbody = document.getElementById('cuerpo-tabla');
-            tbody.innerHTML = "";
-            
-            let alumnosFiltrados = alumnos.filter(a => a.clase === claseFiltro);
-
-            if (alumnosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium italic">No hay alumnos cursando esta clase actualmente.</td></tr>`;
-                return;
-            }
-
-            alumnosFiltrados.forEach((al) => {
-                const idxGlobal = alumnos.findIndex(a => a.nombre === al.nombre && a.apellido === al.apellido);
-                const tr = document.createElement('tr');
-                let colorFila = "hover:bg-slate-50";
-                let badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${al.estado==='Presente'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'}">${al.estado}</span>`;
-                
-                if (al.faltas === 3) { colorFila = "bg-amber-50 border-l-4 border-amber-500"; badgeEstado += ` <span class="text-[9px] font-bold text-amber-700">AL LÍMITE</span>`; }
-                else if (al.faltas >= 4) { colorFila = "bg-red-50 border-l-4 border-red-500 text-red-950"; badgeEstado = `<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600 text-white">🛑 LIBRE</span>`; }
-
-                tr.className = `border-b border-slate-100 ${colorFila}`;
-                tr.innerHTML = `
-                    <td class="p-3 font-semibold text-slate-800">${al.apellido.toUpperCase()}, ${al.nombre}</td>
-                    <td class="p-3 text-pink-600 font-bold text-[12px]">${al.lider || 'Ninguno'}</td>
-                    <td class="p-3 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="restarFalta(${idxGlobal})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold px-1.5 py-0.5 rounded text-[10px]">-</button>
-                            <span class="font-extrabold text-sm min-w-[16px]">${al.faltas}</span>
-                            <button onclick="sumarFalta(${idxGlobal})" class="bg-slate-800 hover:bg-slate-900 text-white font-extrabold px-1.5 py-0.5 rounded text-[10px]">+</button>
-                        </div>
-                    </td>
-                    <td class="p-3">${badgeEstado}</td>
-                    <td class="p-3 no-export">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <select onchange="modificarDesdeAdmin(${idxGlobal}, this.value)" class="p-1 border rounded text-xs bg-white text-slate-700">
-                                <option value="Presente" ${al.estado==='Presente'?'selected':''}>Presente</option>
-                                <option value="Ausente" ${al.estado==='Ausente'?'selected':''}>Ausente</option>
-                            </select>
-                            <button onclick="editarFaltasManual(${idxGlobal})" class="bg-blue-50 text-blue-600 px-2 py-1 rounded font-bold text-[10px]">⚙️</button>
-                            <button onclick="eliminarAlumno(${idxGlobal})" class="bg-red-50 text-red-600 px-2 py-1 rounded font-bold text-[10px]">🗑️</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function modificarDesdeAdmin(idxGlobal, nuevoEstado) {
-            alumnos[idxGlobal].estado = nuevoEstado;
-            if (nuevoEstado === "Presente") {
-                const ahora = new Date();
-                const fechaLegible = `${ahora.getDate().toString().padStart(2,'0')}/${(ahora.getMonth()+1).toString().padStart(2,'0')}/${ahora.getFullYear()} ${ahora.getHours().toString().padStart(2,'0')}:${ahora.getMinutes().toString().padStart(2,'0')}`;
-                if (!alumnos[idxGlobal].historial) alumnos[idxGlobal].historial = [];
-                alumnos[idxGlobal].historial.push(fechaLegible);
-            }
-            guardarEnLocalStorage();
-            actualizarTablaFiltrada(selectorClase.value);
-        }
-
         function inicializarEscaner() {
             const scan = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 200 });
             scan.render((codigoLeido) => {
@@ -404,8 +449,9 @@
                 setTimeout(() => { escanerBloqueado = false; }, 3000);
 
                 if (al) {
+                    const limiteLibre = (al.clase === "Nivel 3 y Escuela de Líderes") ? 2 : 4;
                     if (al.estado === "Presente") { return flashearCartelGigante(`REPETIDO: ${al.apellido}`, "advertencia"); }
-                    if (al.faltas >= 4) { return flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error"); }
+                    if (al.faltas >= limiteLibre) { return flashearCartelGigante(`🛑 LIBRE: ${al.apellido}`, "error"); }
 
                     flashearCartelGigante(`✅ ${al.apellido} - ${al.clase}`, "exito");
                     al.estado = "Presente";
@@ -461,16 +507,34 @@
             let matrizExcel = [];
 
             Object.keys(estructurado).sort().forEach(clase => {
+                const esAvanzado = (clase === "Nivel 3 y Escuela de Líderes");
+                const limiteLibre = esAvanzado ? 2 : 4;
+
                 Object.keys(estructurado[clase]).sort().forEach(lider => {
                     estructurado[clase][lider].forEach(al => {
-                        matrizExcel.push({
+                        const totalAsistencias = al.historial ? al.historial.length : 0;
+                        const notaMostrable = al.nota !== "" ? al.nota : "Sin nota";
+
+                        let condicion = "🎓 EGRESADO";
+                        if (al.faltas >= limiteLibre) condicion = "🛑 LIBRE POR FALTAS";
+                        else if (al.nota !== "" && parseFloat(al.nota) < 7) condicion = "📉 REPROBADO EXAMEN";
+                        else if (al.nota === "") condicion = "⏳ PENDIENTE EVALUACIÓN";
+
+                        let fila = {
                             "CLASE": clase,
                             "LÍDER RESPONSABLE": lider.toUpperCase(),
                             "ALUMNO": `${al.apellido.toUpperCase()}, ${al.nombre}`,
-                            "TOTAL FALTAS": al.faltas,
-                            "ASISTENCIAS": al.historial ? al.historial.join(" | ") : "Sin entradas",
-                            "CONDICIÓN": al.faltas >= 4 ? "LIBRE" : "EGRESADO"
-                        });
+                            "FALTAS ACUMULADAS": al.faltas,
+                            "NOTA EXAMEN": notaMostrable
+                        };
+
+                        if (tipoReporte === 'final') {
+                            fila["CONDICIÓN FINAL"] = condicion;
+                        } else {
+                            fila["CLASES ASISTIDAS"] = totalAsistencias;
+                            fila["ESTADO HOY"] = al.estado;
+                        }
+                        matrizExcel.push(fila);
                     });
                 });
             });
@@ -485,31 +549,46 @@
             const { estructurado, tipoReporte } = obtenerDatosAgrupados();
             
             let html = `<div style="padding: 25px; font-family: sans-serif; color: #1e293b; background-color: #ffffff;">
-                <h1 style="text-transform: uppercase; font-size: 20px; font-weight: 900; color: #1a365d; border-bottom: 3px solid #db2777; padding-bottom: 5px; margin-bottom:10px;">CCI - INFORME AGALONADO POR LÍDERES</h1>`;
+                <h1 style="text-transform: uppercase; font-size: 20px; font-weight: 900; color: #1a365d; border-bottom: 3px solid #db2777; padding-bottom: 5px; margin-bottom:10px;">
+                    CCI - INFORME DE RENDIMIENTO ACADÉMICO
+                </h1>
+                <p style="font-size: 11px; color: #64748b; margin-bottom: 20px;">Tipo de Reporte: <span style="font-weight:bold; color:#db2777; text-transform:uppercase;">${tipoReporte}</span></p>`;
 
             Object.keys(estructurado).sort().forEach(clase => {
-                html += `<div style="margin-top: 20px; background: #1a365d; color: white; padding: 6px; font-weight: bold; border-radius: 4px; font-size: 12px;">🏫 CLASE: ${clase}</div>`;
+                const esAvanzado = (clase === "Nivel 3 y Escuela de Líderes");
+                const limiteLibre = esAvanzado ? 2 : 4;
+
+                html += `<div style="margin-top: 20px; background: #1a365d; color: white; padding: 6px; font-weight: bold; border-radius: 4px; font-size: 12px; text-transform: uppercase;">🏫 CLASE: ${clase}</div>`;
                 
                 Object.keys(estructurado[clase]).sort().forEach(lider => {
-                    html += `<h3 style="margin: 10px 0 4px 2px; font-size: 11px; color: #db2777; font-weight: bold;">👤 LÍDER: ${lider.toUpperCase()}</h3>`;
-                    html += `<table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;">
+                    html += `<h3 style="margin: 12px 0 6px 2px; font-size: 11px; color: #db2777; font-weight: bold; text-transform: uppercase;">👤 LÍDER RESPONSABLE: ${lider}</h3>`;
+                    
+                    html += `<table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 15px;">
                         <thead>
-                            <tr style="background-color: #f8fafc; text-align: left; color: #475569; font-size: 9px;">
-                                <th style="padding: 5px; border: 1px solid #e2e8f0; width: 30%;">Alumno</th>
-                                <th style="padding: 5px; border: 1px solid #e2e8f0; text-align: center; width: 10%;">Faltas</th>
-                                <th style="padding: 5px; border: 1px solid #e2e8f0; width: 45%;">Asistencias Registradas</th>
-                                <th style="padding: 5px; border: 1px solid #e2e8f0; text-align: center; width: 15%;">Estado</th>
+                            <tr style="background-color: #f8fafc; text-align: left; color: #475569; font-size: 9px; font-weight: bold;">
+                                <th style="padding: 6px; border: 1px solid #e2e8f0; width: 40%;">Alumno</th>
+                                <th style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; width: 15%;">Faltas</th>
+                                <th style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; width: 15%;">Nota Final</th>
+                                <th style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; width: 30%;">Condición</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
                     estructurado[clase][lider].forEach(al => {
-                        const egresaStatus = al.faltas >= 4 ? '<span style="color:#b91c1c; font-weight:bold;">LIBRE</span>' : '<span style="color:#047857; font-weight:bold;">EGRESADO</span>';
+                        let egresaStatus = '<span style="color:#047857; font-weight:bold; background-color:#f0fdf4; padding:2px 6px; border-radius:4px;">🎓 EGRESADO</span>';
+                        if (al.faltas >= limiteLibre) {
+                            egresaStatus = '<span style="color:#b91c1c; font-weight:bold; background-color:#fef2f2; padding:2px 6px; border-radius:4px;">🛑 LIBRE</span>';
+                        } else if (al.nota !== "" && parseFloat(al.nota) < 7) {
+                            egresaStatus = '<span style="color:#d97706; font-weight:bold; background-color:#fffbeb; padding:2px 6px; border-radius:4px;">📉 REPROBADO</span>';
+                        } else if (al.nota === "") {
+                            egresaStatus = '<span style="color:#475569; font-weight:bold; background-color:#f1f5f9; padding:2px 6px; border-radius:4px;">⏳ SIN NOTA</span>';
+                        }
+                        
                         html += `<tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 5px; border: 1px solid #e2e8f0; font-weight: 600;">${al.apellido.toUpperCase()}, ${al.nombre}</td>
-                            <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${al.faltas}</td>
-                            <td style="padding: 5px; border: 1px solid #e2e8f0; color:#475569;">${al.historial ? al.historial.join(' | ') : 'Sin marcas'}</td>
-                            <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${egresaStatus}</td>
+                            <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">${al.apellido.toUpperCase()}, ${al.nombre}</td>
+                            <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color:#475569;">${al.faltas}</td>
+                            <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color:#475569;">${al.nota !== "" ? al.nota : '-'}</td>
+                            <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">${egresaStatus}</td>
                         </tr>`;
                     });
                     html += `</tbody></table>`;
@@ -517,8 +596,19 @@
             });
 
             html += `</div>`;
-            const con = document.getElementById('tabla-exportacion-oculta'); con.innerHTML = html; con.classList.remove('hidden');
-            html2pdf().from(con).set({ margin: 0.3, filename: `CCI_Reporte.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).save().then(() => { con.classList.add('hidden'); });
+            
+            const con = document.getElementById('tabla-exportacion-oculta'); 
+            con.innerHTML = html; con.classList.remove('hidden');
+            
+            html2pdf().from(con).set({
+                margin: 0.4,
+                filename: `CCI_Reporte_${tipoReporte.toUpperCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            }).save().then(() => { 
+                con.classList.add('hidden'); con.innerHTML = "";
+            });
         }
 
         function flashearCartelGigante(texto, tipo) {
